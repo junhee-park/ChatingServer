@@ -8,11 +8,10 @@ namespace Server
 {
     internal class Program
     {
-        static SocketAsyncEventArgs acceptArgs = new SocketAsyncEventArgs();
-        static Socket acceptSocket;
-
         static Dictionary<int, Session> sessions = new Dictionary<int, Session>();
         static int incSessionId = 0;
+
+        static object _lock = new object();
 
         static void Main(string[] args)
         {
@@ -21,37 +20,21 @@ namespace Server
             IPAddress[] iPAddress = Dns.GetHostAddresses(Dns.GetHostName());
             IPEndPoint iPEndPoint = new IPEndPoint(iPAddress[1], 7777);
 
-            acceptArgs.Completed += new EventHandler<SocketAsyncEventArgs>(AcceptCompleted);
-
-            acceptSocket = new Socket(iPEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            acceptSocket.Bind(iPEndPoint);
-            acceptSocket.Listen(100);
-
-            AcceptSocket();
+            Listener listener = new Listener();
+            listener.Init(iPEndPoint,
+                (args) =>
+                {
+                    lock (_lock)
+                    {
+                        ClientSession session = new ClientSession(args.AcceptSocket, incSessionId);
+                        sessions.Add(incSessionId, session);
+                        incSessionId++;
+                        return session;
+                    }
+                });
 
             Console.ReadKey();
         }
-
-        public static void AcceptSocket()
-        {
-            acceptArgs.AcceptSocket = null;
-
-            bool isPending = acceptSocket.AcceptAsync(acceptArgs);
-            if (!isPending)
-                AcceptCompleted(null, acceptArgs);
-        }
-
-        public static void AcceptCompleted(object? sender, SocketAsyncEventArgs args)
-        {
-            if (args.AcceptSocket == null)
-                return;
-
-            ClientSession client = new ClientSession(args.AcceptSocket, incSessionId++);
-            sessions.Add(client.UserId, client);
-
-            AcceptSocket();
-        }
-
 
         public static void Boardcast(byte[] data)
         {

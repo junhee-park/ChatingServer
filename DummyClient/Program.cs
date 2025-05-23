@@ -6,8 +6,6 @@ namespace DummyClient
 {
     internal class Program
     {
-        static SocketAsyncEventArgs connectArgs = new SocketAsyncEventArgs();
-        static Socket connectSocket;
         static ServerSession serverSession;
 
         static void Main(string[] args)
@@ -17,15 +15,13 @@ namespace DummyClient
             IPAddress[] iPAddress = Dns.GetHostAddresses(Dns.GetHostName());
             IPEndPoint iPEndPoint = new IPEndPoint(iPAddress[1], 7777);
 
-            connectArgs.Completed += new EventHandler<SocketAsyncEventArgs>(ConnectCompleted);
-            connectArgs.RemoteEndPoint = iPEndPoint;
-
-            connectSocket = new Socket(iPEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            bool isPending = connectSocket.ConnectAsync(connectArgs);
-            if (!isPending)
-            {
-                ConnectCompleted(null, connectArgs);
-            }
+            Connector connector = new Connector();
+            connector.Connect(iPEndPoint,
+                (saea) => {
+                    serverSession = new ServerSession(saea.ConnectSocket);
+                    return serverSession;
+                },
+                1);
 
             while (true)
             {
@@ -42,11 +38,6 @@ namespace DummyClient
                 serverSession.SendArgs.SetBuffer(data);
                 serverSession.ProcessSend();
             }
-        }
-
-        static void ConnectCompleted(object? sender, SocketAsyncEventArgs e)
-        {
-            serverSession = new ServerSession(e.ConnectSocket);
         }
     }
 
