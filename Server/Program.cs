@@ -3,12 +3,13 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using ServerCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Server
 {
     internal class Program
     {
-        static Dictionary<int, Session> sessions = new Dictionary<int, Session>();
+        public static Dictionary<int, Session> sessions = new Dictionary<int, Session>();
         static int incSessionId = 0;
 
         static object _lock = new object();
@@ -28,12 +29,24 @@ namespace Server
                     {
                         ClientSession session = new ClientSession(args.AcceptSocket, incSessionId);
                         sessions.Add(incSessionId, session);
-                        incSessionId++;
+                        incSessionId += 1;
                         return session;
                     }
                 });
 
-            Console.ReadKey();
+            while (true)
+            {
+                lock (_lock)
+                {
+                    foreach (var kvIdUser in sessions)
+                    {
+                        Session session = kvIdUser.Value;
+
+                        session.ProcessSend();
+                    }
+                }
+                Thread.Sleep(100);
+            }
         }
 
         public static void Boardcast(byte[] data)
@@ -41,10 +54,8 @@ namespace Server
             foreach(var kvIdUser in sessions)
             {
                 Session session = kvIdUser.Value;
-                SocketAsyncEventArgs sendArgs = kvIdUser.Value.SendArgs;
-                sendArgs.SetBuffer(data);
 
-                session.ProcessSend();
+                session.RegisterSend(data);
             }
         }
 
@@ -62,11 +73,13 @@ namespace Server
         public int UserId { get; set; }
         public ClientSession(Socket socket, int userId) : base(socket)
         {
+            Console.WriteLine($"생성자 {userId}");
             UserId = userId;
         }
 
         public override void OnRecv(byte[] data)
         {
+            Console.WriteLine($"OnRecv {UserId}");
             ServerPacketManager.Instance.InvokePacketHandler(this, data);
         }
     }

@@ -25,6 +25,9 @@ namespace ServerCore
                 saea.UserToken = socket;
 
                 ProcessConnect(saea);
+
+                // TEMP
+                Thread.Sleep(10);
             }
         }
 

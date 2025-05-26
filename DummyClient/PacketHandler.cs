@@ -13,10 +13,11 @@ namespace DummyClient
     {
         public static void S_ChatHandler(Session session, byte[] buffer)
         {
+            ServerSession serverSession = session as ServerSession;
             S_Chat s_Chat = new S_Chat();
             s_Chat.Read(buffer);
 
-            Console.WriteLine($"{s_Chat.userId}: {s_Chat.msg}");
+            Console.WriteLine($"[{serverSession.testServerSessionName} -> User_{s_Chat.userId}]: {s_Chat.msg}");
         }
     }
 }

@@ -15,6 +15,7 @@ namespace ServerCore
 
 
         Socket _socket;
+        Queue<byte[]> _sendQueue = new Queue<byte[]>();
 
         public SocketAsyncEventArgs RecvArgs { get; }
         public SocketAsyncEventArgs SendArgs { get; }
@@ -23,6 +24,8 @@ namespace ServerCore
         public byte[] Buffer { get { return _recvBuffer; } }
         public int BufferSize { get { return _recvBuffer.Length; } }
         public Socket Socket { get { return _socket; } }
+
+        object _lock = new object();
 
         public abstract void OnRecv(byte[] data);
 
@@ -83,8 +86,24 @@ namespace ServerCore
             }
         }
 
+        public void RegisterSend(byte[] buffer)
+        {
+            lock (_lock)
+            {
+                _sendQueue.Enqueue(buffer);
+
+            }
+        }
+
         public void ProcessSend()
         {
+            lock ( _lock)
+            {
+                if (_sendQueue.Count == 0)
+                    return;
+
+                SendArgs.SetBuffer(_sendQueue.Dequeue());
+            }
             bool pending = _socket.SendAsync(SendArgs);
             if (!pending)
                 SendCompleted(null, SendArgs);
@@ -96,7 +115,7 @@ namespace ServerCore
             if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success)
             {
                 args.SetBuffer(null, 0, 0);
-               
+
                 // Console.WriteLine($"{args.BytesTransferred}");
             }
             else

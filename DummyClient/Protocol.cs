@@ -43,7 +43,7 @@ public class S_Chat : Packet
         int msgSize = Encoding.UTF8.GetByteCount(msg);
         buffer = new byte[2 + sizeof(int) + msgSize + 2];
         result = BitConverter.TryWriteBytes(new Span<byte>(buffer, offset, sizeof(ushort)), (ushort)PacketId.S_CHAT);
-        offset += 2;
+        offset += sizeof(ushort);
 
         result = BitConverter.TryWriteBytes(new Span<byte>(buffer, offset, sizeof(int)), userId);
         offset += sizeof(int);
@@ -73,7 +73,7 @@ public class C_Chat : Packet
         bool result = false;
         int count = 2;
         int msgSize = Encoding.UTF8.GetByteCount(msg);
-        buffer = new byte[2 + sizeof(int) + msgSize + 2];
+        buffer = new byte[2 + msgSize + 2];
         result = BitConverter.TryWriteBytes(new Span<byte>(buffer, count, sizeof(ushort)), (ushort)PacketId.C_CHAT);
         count += 2;
 
