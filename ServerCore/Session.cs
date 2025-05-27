@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,23 +21,25 @@ namespace ServerCore
         public SocketAsyncEventArgs RecvArgs { get; }
         public SocketAsyncEventArgs SendArgs { get; }
 
-        byte[] _recvBuffer;
-        public byte[] Buffer { get { return _recvBuffer; } }
-        public int BufferSize { get { return _recvBuffer.Length; } }
+        RecvBuffer _recvBuffer;
         public Socket Socket { get { return _socket; } }
 
         object _lock = new object();
+        int _disconnect = 0;
 
         public abstract void OnRecv(byte[] data);
+        public abstract void OnSend(int bytesTransferred);
+        public abstract void OnConnect(EndPoint endPoint);
+        public abstract void OnDisconnect(EndPoint endPoint);
 
         public Session(Socket socket)
         {
             this._socket = socket;
-            this._recvBuffer = new byte[1024];
+            this._recvBuffer = new RecvBuffer(1024);
 
             RecvArgs = new SocketAsyncEventArgs();
             RecvArgs.Completed += new EventHandler<SocketAsyncEventArgs>(RecvCompleted);
-            RecvArgs.SetBuffer(this._recvBuffer);
+            RecvArgs.SetBuffer(this._recvBuffer.Buffer);
             SendArgs = new SocketAsyncEventArgs();
             SendArgs.Completed += new EventHandler<SocketAsyncEventArgs>(SendCompleted);
 
@@ -46,7 +49,10 @@ namespace ServerCore
 
         public void ProcessRecv(SocketAsyncEventArgs args)
         {
-            Array.Clear(this._recvBuffer);
+            if (_disconnect == 1)
+                return;
+
+            this._recvBuffer.Clean();
 
             bool pending = _socket.ReceiveAsync(args);
             if (!pending)
@@ -63,7 +69,13 @@ namespace ServerCore
                     return;
                 }
 
-                ushort size = BitConverter.ToUInt16(Buffer, 0);
+                if (_recvBuffer.OnWrite(args.BytesTransferred) == false)
+                {
+                    Disconnect();
+                    return;
+                }
+
+                ushort size = BitConverter.ToUInt16(this._recvBuffer.Buffer, 0);
 
                 if (args.BytesTransferred < size)
                 {
@@ -71,12 +83,16 @@ namespace ServerCore
                     return;
                 }
 
-                ushort packetId = BitConverter.ToUInt16(Buffer, HEADER_SIZE);
-
-                // TODO: 버퍼내 데이터와 헤더에 있는 사이즈 크기와 맞는지 확인 필요
+                ushort packetId = BitConverter.ToUInt16(this._recvBuffer.Buffer, HEADER_SIZE);
 
                 // 뭔가 함
-                OnRecv(Buffer);
+                OnRecv(this._recvBuffer.Buffer);
+
+                if (_recvBuffer.OnRead(size) == false)
+                {
+                    Disconnect();
+                    return;
+                }
 
                 ProcessRecv(args);
             }
@@ -97,6 +113,9 @@ namespace ServerCore
 
         public void ProcessSend()
         {
+            if (_disconnect == 1)
+                return;
+
             lock ( _lock)
             {
                 if (_sendQueue.Count == 0)
@@ -114,6 +133,7 @@ namespace ServerCore
         {
             if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success)
             {
+                OnSend(args.BytesTransferred);
                 args.SetBuffer(null, 0, 0);
 
                 // Console.WriteLine($"{args.BytesTransferred}");
@@ -126,6 +146,10 @@ namespace ServerCore
 
         public void Disconnect()
         {
+            if (Interlocked.Exchange(ref _disconnect, 1) == 1)
+                return;
+            OnDisconnect(_socket.RemoteEndPoint);
+            _sendQueue.Clear();
             _socket.Shutdown(SocketShutdown.Both);
             _socket.Close();
         }

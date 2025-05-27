@@ -28,7 +28,9 @@ namespace Server
                     lock (_lock)
                     {
                         ClientSession session = new ClientSession(args.AcceptSocket, incSessionId);
+                        session.OnConnect(iPEndPoint);
                         sessions.Add(incSessionId, session);
+
                         incSessionId += 1;
                         return session;
                     }
@@ -45,7 +47,7 @@ namespace Server
                         session.ProcessSend();
                     }
                 }
-                Thread.Sleep(100);
+                Thread.Sleep(0);
             }
         }
 
@@ -73,14 +75,27 @@ namespace Server
         public int UserId { get; set; }
         public ClientSession(Socket socket, int userId) : base(socket)
         {
-            Console.WriteLine($"생성자 {userId}");
             UserId = userId;
         }
 
         public override void OnRecv(byte[] data)
         {
-            Console.WriteLine($"OnRecv {UserId}");
             ServerPacketManager.Instance.InvokePacketHandler(this, data);
+        }
+
+        public override void OnSend(int bytesTransferred)
+        {
+
+        }
+
+        public override void OnConnect(EndPoint endPoint)
+        {
+            Console.WriteLine($"OnConnect User_{UserId} {endPoint.ToString()}");
+        }
+
+        public override void OnDisconnect(EndPoint endPoint)
+        {
+            Console.WriteLine($"OnDisconnect User_{UserId} {endPoint.ToString()}");
         }
     }
 }

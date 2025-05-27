@@ -17,7 +17,8 @@ namespace DummyClient
             S_Chat s_Chat = new S_Chat();
             s_Chat.Read(buffer);
 
-            Console.WriteLine($"[{serverSession.testServerSessionName} -> User_{s_Chat.userId}]: {s_Chat.msg}");
+            if (s_Chat.userId == 0)
+                Console.WriteLine($"[{serverSession.testServerSessionName} -> User_{s_Chat.userId}]: {s_Chat.msg}");
         }
     }
 }

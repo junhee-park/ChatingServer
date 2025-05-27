@@ -11,7 +11,7 @@ namespace DummyClient
 
         static object _lock = new object();
 
-        static int testConnection = 5;
+        static int testConnection = 2;
 
 
 
@@ -30,6 +30,7 @@ namespace DummyClient
                     lock (_lock)
                     {
                         serverSession = new ServerSession(saea.ConnectSocket);
+                        serverSession.OnConnect(saea.RemoteEndPoint);
                         sessions.Add(serverSession);
                         return serverSession;
                     }
@@ -41,7 +42,7 @@ namespace DummyClient
                 if (sessions.Count != testConnection)
                     continue;
 
-                Thread.Sleep(1000);
+                Thread.Sleep(100);
 
                 Testing();
                 //string msg = Console.ReadLine();
@@ -89,9 +90,24 @@ namespace DummyClient
             testServerSessionName = $"TestSession_{Interlocked.Increment(ref count)}";
         }
 
+        public override void OnConnect(EndPoint endPoint)
+        {
+
+        }
+
+        public override void OnDisconnect(EndPoint endPoint)
+        {
+
+        }
+
         public override void OnRecv(byte[] data)
         {
             ClientPacketManager.Instance.InvokePacketHandler(this, data);
+        }
+
+        public override void OnSend(int bytesTransferred)
+        {
+
         }
     }
 }
