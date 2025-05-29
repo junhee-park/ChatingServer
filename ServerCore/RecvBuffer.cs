@@ -9,29 +9,30 @@ namespace ServerCore
 
     public class RecvBuffer
     {
-        byte[] _recvBuffer;
-        public byte[] Buffer { get { return _recvBuffer; } }
-        public int BufferSize { get { return _recvBuffer.Length; } }
-        public int ReadPos { get; set; }
-        public int WritePos { get; set; }
+        ArraySegment<byte> _recvBuffer;
+        public ArraySegment<byte> Buffer { get { return _recvBuffer; } }
+        int _readPos;
+        int _writePos;
 
-        public int DataSize { get { return WritePos - ReadPos; } }
-        public int FreeSize { get { return _recvBuffer.Length - DataSize; } }
+        public int DataSize { get { return _writePos - _readPos; } }
+        public int FreeSize { get { return _recvBuffer.Count - _writePos; } }
+        public ArraySegment<byte> ReadSegment { get { return new ArraySegment<byte>(_recvBuffer.Array, _recvBuffer.Offset + _readPos, DataSize); } }
+        public ArraySegment<byte> WriteSegment { get { return new ArraySegment<byte>(_recvBuffer.Array, _recvBuffer.Offset + _writePos, FreeSize); } }
 
         public RecvBuffer(int bufferSize)
         {
-            _recvBuffer = new byte[bufferSize];
+            _recvBuffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
         }
 
         public void Clean()
         {
             if (DataSize == 0)
-                ReadPos = WritePos = 0;
+                _readPos = _writePos = 0;
             else
             {
-                Array.Copy(_recvBuffer, ReadPos, _recvBuffer, 0, DataSize);
-                WritePos = DataSize - ReadPos;
-                ReadPos = 0;
+                Array.Copy(_recvBuffer.Array, _recvBuffer.Offset + _readPos, _recvBuffer.Array, 0, DataSize);
+                _writePos = DataSize - _readPos;
+                _readPos = 0;
 
             }
         }
@@ -41,7 +42,7 @@ namespace ServerCore
             if (readBytes > FreeSize)
                 return false;
 
-            ReadPos += readBytes;
+            _readPos += readBytes;
             return true;
         }
 
@@ -50,7 +51,7 @@ namespace ServerCore
             if (writeBytes > FreeSize)
                 return false;
 
-            WritePos += writeBytes;
+            _writePos += writeBytes;
             return true;
         }
     }

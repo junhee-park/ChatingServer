@@ -15,10 +15,10 @@ public abstract class Packet
     public ushort size;
     public ushort packetId;
 
-    public virtual void Read(byte[] data)
+    public virtual void Read(ArraySegment<byte> data)
     {
-        size = BitConverter.ToUInt16(data, 0);
-        packetId = BitConverter.ToUInt16(data, 2);
+        size = BitConverter.ToUInt16(data.Array, 0);
+        packetId = BitConverter.ToUInt16(data.Array, 2);
     }
 }
 
@@ -27,13 +27,13 @@ public class S_Chat : Packet
     public int userId;
     public string msg;
 
-    public override void Read(byte[] data)
+    public override void Read(ArraySegment<byte> data)
     {
         base.Read(data);
         int count = 4;
-        userId = BitConverter.ToInt32(data, count);
+        userId = BitConverter.ToInt32(data.Array, count);
         count += sizeof(int);
-        msg = Encoding.UTF8.GetString(data, count, size);
+        msg = Encoding.UTF8.GetString(data.Array, count, size - count);
     }
 
     public bool Write(out byte[] buffer)
@@ -61,11 +61,11 @@ public class C_Chat : Packet
 {
     public string msg;
 
-    public override void Read(byte[] data)
+    public override void Read(ArraySegment<byte> data)
     {
         base.Read(data);
         int count = 4;
-        msg = Encoding.UTF8.GetString(data, count, size);
+        msg = Encoding.UTF8.GetString(data.Array, count, size - count);
     }
 
     public bool Write(out byte[] buffer)

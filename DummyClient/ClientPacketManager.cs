@@ -17,17 +17,17 @@ namespace DummyClient
         public static ClientPacketManager Instance { get { return _instance; } }
         #endregion
 
-        public Dictionary<ushort, Action<Session, byte[]>> handlers = new Dictionary<ushort, Action<Session, byte[]>> ();
+        public Dictionary<ushort, Action<Session, ArraySegment<byte>>> handlers = new Dictionary<ushort, Action<Session, ArraySegment<byte>>> ();
         
         public ClientPacketManager()
         {
             handlers.Add((ushort)PacketId.S_CHAT, PacketHandler.S_ChatHandler);
         }
 
-        public void InvokePacketHandler(Session session, byte[] buffer)
+        public void InvokePacketHandler(Session session, ArraySegment<byte> buffer)
         {
-            ushort size = BitConverter.ToUInt16(buffer, 0);
-            ushort packetId = BitConverter.ToUInt16(buffer, 2);
+            ushort size = BitConverter.ToUInt16(buffer.Array, 0);
+            ushort packetId = BitConverter.ToUInt16(buffer.Array, 2);
 
             bool result = handlers.TryGetValue(packetId, out var handler);
             if (!result)

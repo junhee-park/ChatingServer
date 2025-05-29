@@ -11,7 +11,7 @@ namespace DummyClient
 {
     public static class PacketHandler
     {
-        public static void S_ChatHandler(Session session, byte[] buffer)
+        public static void S_ChatHandler(Session session, ArraySegment<byte> buffer)
         {
             ServerSession serverSession = session as ServerSession;
             S_Chat s_Chat = new S_Chat();

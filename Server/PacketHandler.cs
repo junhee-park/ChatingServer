@@ -12,7 +12,7 @@ namespace Server
 {
     public static class PacketHandler
     {
-        public static void C_ChatHandler(Session session, byte[] buffer)
+        public static void C_ChatHandler(Session session, ArraySegment<byte> buffer)
         {
             ClientSession clientSession = session as ClientSession;
 

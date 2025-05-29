@@ -11,7 +11,7 @@ namespace DummyClient
 
         static object _lock = new object();
 
-        static int testConnection = 2;
+        static int testConnection = 100;
 
 
 
@@ -81,7 +81,7 @@ namespace DummyClient
         }
     }
 
-    public class ServerSession : Session
+    public class ServerSession : PacketSession
     {
         public static int count = 0;
         public string testServerSessionName;
@@ -100,7 +100,7 @@ namespace DummyClient
 
         }
 
-        public override void OnRecv(byte[] data)
+        public override void OnRecvPacket(ArraySegment<byte> data)
         {
             ClientPacketManager.Instance.InvokePacketHandler(this, data);
         }

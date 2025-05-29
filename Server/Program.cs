@@ -70,7 +70,7 @@ namespace Server
         }
     }
 
-    public class ClientSession : Session
+    public class ClientSession : PacketSession
     {
         public int UserId { get; set; }
         public ClientSession(Socket socket, int userId) : base(socket)
@@ -78,7 +78,7 @@ namespace Server
             UserId = userId;
         }
 
-        public override void OnRecv(byte[] data)
+        public override void OnRecvPacket(ArraySegment<byte> data)
         {
             ServerPacketManager.Instance.InvokePacketHandler(this, data);
         }
