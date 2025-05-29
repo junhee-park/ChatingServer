@@ -30,8 +30,8 @@ namespace ServerCore
                 _readPos = _writePos = 0;
             else
             {
-                Array.Copy(_recvBuffer.Array, _recvBuffer.Offset + _readPos, _recvBuffer.Array, 0, DataSize);
-                _writePos = DataSize - _readPos;
+                Array.Copy(_recvBuffer.Array, _recvBuffer.Offset + _readPos, _recvBuffer.Array, _recvBuffer.Offset, DataSize);
+                _writePos = DataSize;
                 _readPos = 0;
 
             }
@@ -39,7 +39,7 @@ namespace ServerCore
 
         public bool OnRead(int readBytes)
         {
-            if (readBytes > FreeSize)
+            if (readBytes > DataSize)
                 return false;
 
             _readPos += readBytes;
