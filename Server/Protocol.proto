@@ -1,0 +1,18 @@
+syntax = "proto3";
+package Protocol;
+
+option csharp_namespace = "Google.Protobuf.Protocol";
+
+enum MsgId {
+	S_CHAT = 0;
+	C_CHAT = 1;
+}
+
+message S_Chat {
+	int32 userId = 1;
+	string msg = 2;
+}
+
+message C_Chat {
+	string msg = 1;
+}

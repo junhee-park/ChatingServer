@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -45,7 +46,6 @@ namespace ServerCore
     {
 
         public const int HEADER_SIZE = 2;
-
 
         Socket _socket;
         Queue<byte[]> _sendQueue = new Queue<byte[]>();
@@ -125,6 +125,8 @@ namespace ServerCore
             {
                 _sendQueue.Enqueue(buffer);
 
+                if (_pendingList.Count == 0)
+                    ProcessSend();
             }
         }
 
@@ -143,26 +145,33 @@ namespace ServerCore
 
                 SendArgs.BufferList = _pendingList;
                 //SendArgs.SetBuffer(_sendQueue.Dequeue());
+                bool pending = _socket.SendAsync(SendArgs);
+                if (!pending)
+                    SendCompleted(null, SendArgs);
             }
-            bool pending = _socket.SendAsync(SendArgs);
-            if (!pending)
-                SendCompleted(null, SendArgs);
 
         }
 
         void SendCompleted(object? sender, SocketAsyncEventArgs args)
         {
-            if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success)
+            lock (_lock)
             {
-                OnSend(args.BytesTransferred);
-                // args.SetBuffer(null, 0, 0);
-                SendArgs.BufferList = null;
-                _pendingList.Clear();
-                // Console.WriteLine($"{args.BytesTransferred}");
-            }
-            else
-            {
-                Disconnect();
+                if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success)
+                {
+                    OnSend(args.BytesTransferred);
+                    // args.SetBuffer(null, 0, 0);
+                    
+                    SendArgs.BufferList = null;
+                    _pendingList.Clear();
+                    // Console.WriteLine($"{args.BytesTransferred}");
+
+                    if (_sendQueue.Count > 0)
+                        ProcessSend();
+                }
+                else
+                {
+                    Disconnect();
+                }
             }
         }
         void Clear()

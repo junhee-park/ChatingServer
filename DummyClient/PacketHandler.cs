@@ -5,20 +5,21 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Google.Protobuf;
+using Google.Protobuf.Protocol;
 using ServerCore;
 
 namespace DummyClient
 {
     public static class PacketHandler
     {
-        public static void S_ChatHandler(Session session, ArraySegment<byte> buffer)
+        public static void S_ChatHandler(Session session, IMessage packet)
         {
             ServerSession serverSession = session as ServerSession;
-            S_Chat s_Chat = new S_Chat();
-            s_Chat.Read(buffer);
+            S_Chat s_ChatPacket = packet as S_Chat;
 
-            if (s_Chat.userId == 0)
-                Console.WriteLine($"[{serverSession.testServerSessionName} -> User_{s_Chat.userId}]: {s_Chat.msg}");
+            if (s_ChatPacket.UserId == 0)
+                Console.WriteLine($"[{serverSession.testServerSessionName} -> User_{s_ChatPacket.UserId}]: {s_ChatPacket.Msg}");
         }
     }
 }

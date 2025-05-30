@@ -1,5 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
+using Google.Protobuf;
+using Google.Protobuf.Protocol;
 using ServerCore;
 
 namespace DummyClient
@@ -11,7 +13,7 @@ namespace DummyClient
 
         static object _lock = new object();
 
-        static int testConnection = 100;
+        static int testConnection = 500;
 
 
 
@@ -59,14 +61,13 @@ namespace DummyClient
         public static void Testing()
         {
             C_Chat c_Chat = new C_Chat(); ;
-            c_Chat.msg = $"Test Message";
-            c_Chat.Write(out byte[] data);
+            c_Chat.Msg = $"Test Message";
 
             for (int i = 0; i < sessions.Count; i++)
             {
                 ServerSession session = sessions[i];
 
-                session.RegisterSend(data);
+                session.Send(c_Chat);
                 session.ProcessSend();
                 //for (int i = 0; i < 100; i++)
                 //{
@@ -88,6 +89,19 @@ namespace DummyClient
         public ServerSession(Socket socket) : base(socket)
         {
             testServerSessionName = $"TestSession_{Interlocked.Increment(ref count)}";
+        }
+
+        public void Send(IMessage message)
+        {
+            string packetName = message.Descriptor.Name.Replace("_", string.Empty);
+            MsgId packetId = (MsgId)Enum.Parse(typeof(MsgId), packetName);
+            int packetSize = message.CalculateSize();
+            ArraySegment<byte> segment = new ArraySegment<byte>(new byte[packetSize + 4]);
+            BitConverter.TryWriteBytes(segment.Array, (ushort)(packetSize + 4));
+            BitConverter.TryWriteBytes(new ArraySegment<byte>(segment.Array, 2, segment.Count - 2), (ushort)packetId);
+            Array.Copy(message.ToByteArray(), 0, segment.Array, 4, packetSize);
+
+            RegisterSend(segment.Array);
         }
 
         public override void OnConnect(EndPoint endPoint)

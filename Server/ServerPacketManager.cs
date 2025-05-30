@@ -4,7 +4,10 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Google.Protobuf;
+using Google.Protobuf.Protocol;
 using ServerCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Server
 {
@@ -15,11 +18,21 @@ namespace Server
         public static ServerPacketManager Instance { get { return _instance; } }
         #endregion
 
-        public Dictionary<ushort, Action<Session, ArraySegment<byte>>> handlers = new Dictionary<ushort, Action<Session, ArraySegment<byte>>> ();
+        Dictionary<ushort, Action<Session, IMessage>> _handlers = new Dictionary<ushort, Action<Session, IMessage>> ();
+        Dictionary<ushort, Func<ArraySegment<byte>, IMessage>> _makePacket = new Dictionary<ushort, Func<ArraySegment<byte>, IMessage>>();
         
         public ServerPacketManager()
         {
-            handlers.Add((ushort)PacketId.C_CHAT, PacketHandler.C_ChatHandler);
+            _handlers.Add((ushort)MsgId.CChat, PacketHandler.C_ChatHandler);
+            _makePacket.Add((ushort)MsgId.CChat, MakePacket<C_Chat>);
+        }
+
+        public T MakePacket<T>(ArraySegment<byte> buffer) where T : IMessage, new()
+        {
+            T packet = new T();
+            packet.MergeFrom(buffer);
+
+            return packet;
         }
 
         public void InvokePacketHandler(Session session, ArraySegment<byte> buffer)
@@ -27,12 +40,20 @@ namespace Server
             ushort size = BitConverter.ToUInt16(buffer.Array, 0);
             ushort packetId = BitConverter.ToUInt16(buffer.Array, 2);
 
-            bool result = handlers.TryGetValue(packetId, out var handler);
+            ArraySegment<byte> data = new ArraySegment<byte>(buffer.Array, 4, size - 4);
+            bool result = _makePacket.TryGetValue(packetId, out var makePacketFunc);
             if (!result)
             {
                 return;
             }
-            handler?.Invoke(session, buffer);
+            IMessage packet = makePacketFunc.Invoke(data);
+
+            result = _handlers.TryGetValue(packetId, out var handler);
+            if (!result)
+            {
+                return;
+            }
+            handler?.Invoke(session, packet);
         }
     }
 }

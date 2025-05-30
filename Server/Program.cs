@@ -2,6 +2,8 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Google.Protobuf;
+using Google.Protobuf.Protocol;
 using ServerCore;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -38,26 +40,18 @@ namespace Server
 
             while (true)
             {
-                lock (_lock)
-                {
-                    foreach (var kvIdUser in sessions)
-                    {
-                        Session session = kvIdUser.Value;
-
-                        session.ProcessSend();
-                    }
-                }
+                
                 Thread.Sleep(0);
             }
         }
 
-        public static void Boardcast(byte[] data)
+        public static void Boardcast(IMessage data)
         {
             foreach(var kvIdUser in sessions)
             {
-                Session session = kvIdUser.Value;
+                ClientSession session = (ClientSession)kvIdUser.Value;
 
-                session.RegisterSend(data);
+                session.Send(data);
             }
         }
 
@@ -76,6 +70,19 @@ namespace Server
         public ClientSession(Socket socket, int userId) : base(socket)
         {
             UserId = userId;
+        }
+
+        public void Send(IMessage message)
+        {
+            string packetName = message.Descriptor.Name.Replace("_", string.Empty);
+            MsgId packetId = (MsgId)Enum.Parse(typeof(MsgId), packetName);
+            int packetSize = message.CalculateSize();
+            ArraySegment<byte> segment = new ArraySegment<byte>(new byte[packetSize + 4]);
+            BitConverter.TryWriteBytes(segment.Array, (ushort)(packetSize + 4));
+            BitConverter.TryWriteBytes(new ArraySegment<byte>(segment.Array, 2, segment.Count - 2), (ushort)packetId);
+            Array.Copy(message.ToByteArray(), 0, segment.Array, 4, packetSize);
+
+            RegisterSend(segment.Array);
         }
 
         public override void OnRecvPacket(ArraySegment<byte> data)
