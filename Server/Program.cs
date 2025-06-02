@@ -87,7 +87,7 @@ namespace Server
 
         public override void OnRecvPacket(ArraySegment<byte> data)
         {
-            ServerPacketManager.Instance.InvokePacketHandler(this, data);
+            PacketManager.Instance.InvokePacketHandler(this, data);
         }
 
         public override void OnSend(int bytesTransferred)

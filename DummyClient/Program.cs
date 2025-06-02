@@ -116,7 +116,7 @@ namespace DummyClient
 
         public override void OnRecvPacket(ArraySegment<byte> data)
         {
-            ClientPacketManager.Instance.InvokePacketHandler(this, data);
+            PacketManager.Instance.InvokePacketHandler(this, data);
         }
 
         public override void OnSend(int bytesTransferred)

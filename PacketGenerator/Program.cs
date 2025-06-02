@@ -55,11 +55,11 @@ namespace PacketGenerator
                 string handlerCode = string.Format(CodeTempletes.PacketHandler, nameType1, nameType2);
                 if (line.Contains("S_"))
                 {
-                    serverHandler.AppendLine(handlerCode);
+                    clientHandler.AppendLine(handlerCode);
                 }
                 else if (line.Contains("C_"))
                 {
-                    clientHandler.AppendLine(handlerCode);
+                    serverHandler.AppendLine(handlerCode);
                 }
             }
             serverPacketManager = string.Format(CodeTempletes.PacketManager, serverHandler);

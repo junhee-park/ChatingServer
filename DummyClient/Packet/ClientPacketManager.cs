@@ -1,21 +1,23 @@
-﻿using Google.Protobuf;
+
+using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using ServerCore;
 
-internal class ClientPacketManager
+public class PacketManager
 {
     #region Singleton
-    static ClientPacketManager _instance = new ClientPacketManager();
-    public static ClientPacketManager Instance { get { return _instance; } }
+    static PacketManager _instance = new PacketManager();
+    public static PacketManager Instance { get { return _instance; } }
     #endregion
 
-    public Dictionary<ushort, Action<Session, IMessage>> handlers = new Dictionary<ushort, Action<Session, IMessage>> ();
+    Dictionary<ushort, Action<Session, IMessage>> _handlers = new Dictionary<ushort, Action<Session, IMessage>> ();
     Dictionary<ushort, Func<ArraySegment<byte>, IMessage>> _makePacket = new Dictionary<ushort, Func<ArraySegment<byte>, IMessage>>();
-
-    public ClientPacketManager()
+        
+    public PacketManager()
     {
-        handlers.Add((ushort)MsgId.SChat, PacketHandler.S_ChatHandler);
+        _handlers.Add((ushort)MsgId.SChat, PacketHandler.S_ChatHandler);
         _makePacket.Add((ushort)MsgId.SChat, MakePacket<S_Chat>);
+
     }
 
     public T MakePacket<T>(ArraySegment<byte> buffer) where T : IMessage, new()
@@ -39,7 +41,7 @@ internal class ClientPacketManager
         }
         IMessage packet = makePacketFunc.Invoke(data);
 
-        result = handlers.TryGetValue(packetId, out var handler);
+        result = _handlers.TryGetValue(packetId, out var handler);
         if (!result)
         {
             return;

@@ -1,21 +1,23 @@
-﻿using Google.Protobuf;
+
+using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using ServerCore;
 
-public class ServerPacketManager
+public class PacketManager
 {
     #region Singleton
-    static ServerPacketManager _instance = new ServerPacketManager();
-    public static ServerPacketManager Instance { get { return _instance; } }
+    static PacketManager _instance = new PacketManager();
+    public static PacketManager Instance { get { return _instance; } }
     #endregion
 
     Dictionary<ushort, Action<Session, IMessage>> _handlers = new Dictionary<ushort, Action<Session, IMessage>> ();
     Dictionary<ushort, Func<ArraySegment<byte>, IMessage>> _makePacket = new Dictionary<ushort, Func<ArraySegment<byte>, IMessage>>();
         
-    public ServerPacketManager()
+    public PacketManager()
     {
         _handlers.Add((ushort)MsgId.CChat, PacketHandler.C_ChatHandler);
         _makePacket.Add((ushort)MsgId.CChat, MakePacket<C_Chat>);
+
     }
 
     public T MakePacket<T>(ArraySegment<byte> buffer) where T : IMessage, new()
