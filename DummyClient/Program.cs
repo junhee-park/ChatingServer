@@ -13,7 +13,7 @@ namespace DummyClient
 
         static object _lock = new object();
 
-        static int testConnection = 500;
+        static int testConnection = 5;
 
 
 
