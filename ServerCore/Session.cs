@@ -19,6 +19,7 @@ namespace ServerCore
         {
             int processLen = 0;
 
+            // 한 패킷에 여러 메세지가 이어져서 들어올 경우 처리할 수 있을 때까지 처리
             while (true)
             {
                 if (data.Count < HEADER_SIZE)
@@ -40,6 +41,10 @@ namespace ServerCore
             return processLen;
         }
 
+        /// <summary>
+        /// 패킷 조립 및 핸들러 실행
+        /// </summary>
+        /// <param name="buffer"></param>
         public abstract void OnRecvPacket(ArraySegment<byte> buffer);
     }
     public abstract class Session
@@ -96,15 +101,17 @@ namespace ServerCore
         {
             if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success)
             {
+                // 리시브 버퍼의 읽기 포지션을 전송받은 바이트만큼 이동
                 if (_recvBuffer.OnWrite(args.BytesTransferred) == false)
                 {
                     Disconnect();
                     return;
                 }
 
-                // 뭔가 함
+                // 패킷 조립 및 패킷과 대응되는 핸들러 실행
                 int processLen = OnRecv(this._recvBuffer.ReadSegment);
 
+                // 리시브 버퍼의 쓰기 포시션을 패킷 조립이 끝난만큼 이동
                 if (_recvBuffer.OnRead(processLen) == false)
                 {
                     Disconnect();
@@ -144,7 +151,7 @@ namespace ServerCore
                     _pendingList.Add(_sendQueue.Dequeue());
 
                 SendArgs.BufferList = _pendingList;
-                //SendArgs.SetBuffer(_sendQueue.Dequeue());
+
                 bool pending = _socket.SendAsync(SendArgs);
                 if (!pending)
                     SendCompleted(null, SendArgs);
@@ -159,11 +166,9 @@ namespace ServerCore
                 if (args.BytesTransferred > 0 && args.SocketError == SocketError.Success)
                 {
                     OnSend(args.BytesTransferred);
-                    // args.SetBuffer(null, 0, 0);
                     
                     SendArgs.BufferList = null;
                     _pendingList.Clear();
-                    // Console.WriteLine($"{args.BytesTransferred}");
 
                     if (_sendQueue.Count > 0)
                         ProcessSend();

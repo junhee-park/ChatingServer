@@ -30,6 +30,7 @@ namespace ServerCore
                 _readPos = _writePos = 0;
             else
             {
+                // 패킷을 읽고 나서 남은 데이터를 앞으로 복사
                 Array.Copy(_recvBuffer.Array, _recvBuffer.Offset + _readPos, _recvBuffer.Array, _recvBuffer.Offset, DataSize);
                 _writePos = DataSize;
                 _readPos = 0;

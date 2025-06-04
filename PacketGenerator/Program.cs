@@ -32,6 +32,7 @@ namespace PacketGenerator
                     }  
                 }
 
+                // 메세지 정의가 끝나거나 메세지 아이디의 명명규칙에 맞지 않는 경우 종료
                 if (line.Contains("}") || !(line.Contains("S_") || line.Contains("C_")))
                     break;
 
@@ -52,6 +53,7 @@ namespace PacketGenerator
                 nameType2.Append(nameType1);
                 nameType2.Insert(1, '_');
 
+                // 핸들러 코드 템플릿에 맞춰 코드 생성
                 string handlerCode = string.Format(CodeTempletes.PacketHandler, nameType1, nameType2);
                 if (line.Contains("S_"))
                 {
@@ -62,6 +64,7 @@ namespace PacketGenerator
                     serverHandler.AppendLine(handlerCode);
                 }
             }
+            // 패킷 매니저 코드에 핸들러 코드 삽입
             serverPacketManager = string.Format(CodeTempletes.PacketManager, serverHandler);
             clientPacketManager = string.Format(CodeTempletes.PacketManager, clientHandler);
 

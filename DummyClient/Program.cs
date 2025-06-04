@@ -1,20 +1,23 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Net.Sockets;
 using Google.Protobuf;
 using Google.Protobuf.Protocol;
+using Google.Protobuf.WellKnownTypes;
 using ServerCore;
 
 namespace DummyClient
 {
     internal class Program
     {
-        static ServerSession serverSession;
-        static List<ServerSession> sessions = new List<ServerSession>();
+        static TestServerSession serverSession;
+        static List<TestServerSession> sessions = new List<TestServerSession>();
 
         static object _lock = new object();
 
-        static int testConnection = 5;
-
+        // testConnection * (1000 / testSendMs) = tps
+        static int testConnection = 10;
+        static int testSendMs = 100;
 
 
         static void Main(string[] args)
@@ -31,7 +34,7 @@ namespace DummyClient
                 (saea) => {
                     lock (_lock)
                     {
-                        serverSession = new ServerSession(saea.ConnectSocket);
+                        serverSession = new TestServerSession(saea.ConnectSocket);
                         serverSession.OnConnect(saea.RemoteEndPoint);
                         sessions.Add(serverSession);
                         return serverSession;
@@ -39,89 +42,102 @@ namespace DummyClient
                 },
                 testConnection);
 
+            
             while (true)
             {
+                Thread.Sleep(1000);
+
                 if (sessions.Count != testConnection)
                     continue;
 
-                Thread.Sleep(100);
-
-                Testing();
-                //string msg = Console.ReadLine();
-                //C_Chat c_Chat = new C_Chat();
-                //c_Chat.msg = msg;
-                //c_Chat.Write(out byte[] data);
-
-                //serverSession.SendArgs.SetBuffer(data);
-                //serverSession.ProcessSend();
+                break;
             }
-            //Console.ReadKey();
+
+            TestRtt();
+            Console.ReadKey();
         }
 
-        public static void Testing()
+        public static void TestRtt()
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            while (true)
+            {
+                if (stopwatch.IsRunning == false)
+                    stopwatch.Start();
+
+                if (stopwatch.ElapsedMilliseconds >= 30000)
+                {
+                    stopwatch.Stop();
+                    var stream = File.CreateText("./test.txt");
+                    foreach (var session in sessions)
+                    {
+                        long totalRtt = 0;
+                        for (int i = 0; i < session.rtts.Count; i++)
+                        {
+                            totalRtt += session.rtts[i];
+                            if (session.testServerSessionName == "TestSession_1")
+                            {
+                                stream.WriteLine($"{session.testServerSessionName} - RTT {i + 1}: {(double)session.rtts[i] / 10000} ms");
+                                //stream.WriteLine($"{session.testServerSessionName} - RTT {i + 1}: {(double)session.rtts[i]} ms");
+                            }
+                        }
+                        var tmp = (double)totalRtt / session.rtts.Count;
+                        stream.WriteLine($"{session.testServerSessionName} - Total Packet Count: {session.rtts.Count}, Min RTT: {(double)session.minRttMs / 10000} ms, Max RTT: {(double)session.maxRttMs / 10000} ms, Avg RTT: {tmp / 10000} ms");
+                        //stream.WriteLine($"{session.testServerSessionName} - Total Packet Count: {session.rtts.Count}, Min RTT: {session.minRttMs} ms, Max RTT: {session.maxRttMs} ms, Avg RTT: {tmp} ms");
+                    }
+                    stream.Dispose();
+                    break;
+                }
+
+                TestBoradcast();
+                Thread.Sleep(testSendMs);
+            }
+        }
+
+        public static void TestBoradcast()
         {
             C_Chat c_Chat = new C_Chat(); ;
-            c_Chat.Msg = $"Test Message";
+            c_Chat.Msg = $"Test Message~~~~~~~";
 
             for (int i = 0; i < sessions.Count; i++)
             {
-                ServerSession session = sessions[i];
+                TestServerSession session = sessions[i];
+
+                c_Chat.TickCount = DateTime.UtcNow.Ticks;
+                //c_Chat.TickCount = Environment.TickCount64;
 
                 session.Send(c_Chat);
                 session.ProcessSend();
-                //for (int i = 0; i < 100; i++)
-                //{
-                //    C_Chat c_Chat = new C_Chat(); ;
-                //    c_Chat.msg = $"Test Message {i}";
-                //    c_Chat.Write(out byte[] data);
-                //    session.SendArgs.SetBuffer(data);
-                //    session.ProcessSend();
-                //    Thread.Sleep(100);
-                //}
             }
         }
     }
 
-    public class ServerSession : PacketSession
+    public class TestServerSession : ServerSession
     {
         public static int count = 0;
         public string testServerSessionName;
-        public ServerSession(Socket socket) : base(socket)
+        public long minRttMs = long.MaxValue;
+        public long maxRttMs = 0;
+        public List<long> rtts = new List<long>();
+        public TestServerSession(Socket socket) : base(socket)
         {
             testServerSessionName = $"TestSession_{Interlocked.Increment(ref count)}";
         }
 
-        public void Send(IMessage message)
+        public void TestCompareRtt(S_Chat s_ChatPacket)
         {
-            string packetName = message.Descriptor.Name.Replace("_", string.Empty);
-            MsgId packetId = (MsgId)Enum.Parse(typeof(MsgId), packetName);
-            int packetSize = message.CalculateSize();
-            ArraySegment<byte> segment = new ArraySegment<byte>(new byte[packetSize + 4]);
-            BitConverter.TryWriteBytes(segment.Array, (ushort)(packetSize + 4));
-            BitConverter.TryWriteBytes(new ArraySegment<byte>(segment.Array, 2, segment.Count - 2), (ushort)packetId);
-            Array.Copy(message.ToByteArray(), 0, segment.Array, 4, packetSize);
+            long rttMs = DateTime.UtcNow.Ticks - s_ChatPacket.TickCount;
+            //long rttMs = Environment.TickCount64 - s_ChatPacket.TickCount;
+            if (rttMs < minRttMs)
+                minRttMs = rttMs;
+            if (rttMs > maxRttMs)
+                maxRttMs = rttMs;
+            rtts.Add(rttMs);
 
-            RegisterSend(segment.Array);
-        }
-
-        public override void OnConnect(EndPoint endPoint)
-        {
-
-        }
-
-        public override void OnDisconnect(EndPoint endPoint)
-        {
-
-        }
-
-        public override void OnRecvPacket(ArraySegment<byte> data)
-        {
-            PacketManager.Instance.InvokePacketHandler(this, data);
-        }
-
-        public override void OnSend(int bytesTransferred)
-        {
+            if (s_ChatPacket.UserId == 0)
+                Console.WriteLine($"[{testServerSessionName} -> User_{s_ChatPacket.UserId}]: {s_ChatPacket.Msg}");
 
         }
     }
+
 }

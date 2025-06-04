@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Net.Sockets;
@@ -8,8 +9,13 @@ using System.Threading.Tasks;
 using DummyClient;
 using Google.Protobuf;
 using Google.Protobuf.Protocol;
+using Google.Protobuf.WellKnownTypes;
 using ServerCore;
 
+/// <summary>
+/// 전송된 패킷을 처리하는 클래스.
+/// 패킷 이름 + Handler 규칙으로 핸들러 함수를 작성해야 해당 패킷 받았을 때 핸들러가 실행됨.
+/// </summary>
 public static class PacketHandler
 {
     public static void S_ChatHandler(Session session, IMessage packet)
@@ -17,7 +23,8 @@ public static class PacketHandler
         ServerSession serverSession = session as ServerSession;
         S_Chat s_ChatPacket = packet as S_Chat;
 
-        if (s_ChatPacket.UserId == 0)
-            Console.WriteLine($"[{serverSession.testServerSessionName} -> User_{s_ChatPacket.UserId}]: {s_ChatPacket.Msg}");
+
+        var testSession = session as TestServerSession;
+        testSession?.TestCompareRtt(s_ChatPacket);
     }
 }
