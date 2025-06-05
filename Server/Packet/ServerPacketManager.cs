@@ -17,6 +17,10 @@ public class PacketManager
     {
         _handlers.Add((ushort)MsgId.CChat, PacketHandler.C_ChatHandler);
         _makePacket.Add((ushort)MsgId.CChat, MakePacket<C_Chat>);
+        _handlers.Add((ushort)MsgId.CPing, PacketHandler.C_PingHandler);
+        _makePacket.Add((ushort)MsgId.CPing, MakePacket<C_Ping>);
+        _handlers.Add((ushort)MsgId.CTestChat, PacketHandler.C_TestChatHandler);
+        _makePacket.Add((ushort)MsgId.CTestChat, MakePacket<C_TestChat>);
 
     }
 

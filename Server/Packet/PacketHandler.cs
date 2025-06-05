@@ -36,4 +36,30 @@ public static class PacketHandler
 
         Program.Boardcast(s_Chat);
     }
+
+    public static void C_PingHandler(Session session, IMessage packet)
+    {
+        ClientSession clientSession = session as ClientSession;
+        C_Ping c_PingPacket = packet as C_Ping;
+        // Ping 응답 패킷 생성
+        S_Ping s_Ping = new S_Ping();
+        // Ping 응답 전송
+        clientSession.Send(s_Ping);
+    }
+
+    public static void C_TestChatHandler(Session session, IMessage packet)
+    {
+        ClientSession clientSession = session as ClientSession;
+        C_TestChat c_TestChatPacket = packet as C_TestChat;
+        // 유저 아이디 추출
+        int userId = clientSession.UserId;
+        // 패킷 생성
+        S_TestChat s_TestChat = new S_TestChat();
+        S_Chat s_chat = new S_Chat();
+        s_chat.UserId = userId;
+        s_chat.Msg = c_TestChatPacket.Chat.Msg;
+        s_TestChat.Chat = s_chat;
+        s_TestChat.TickCount = c_TestChatPacket.TickCount;
+        Program.Boardcast(s_TestChat);
+    }
 }

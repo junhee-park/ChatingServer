@@ -96,17 +96,18 @@ namespace DummyClient
 
         public static void TestBoradcast()
         {
-            C_Chat c_Chat = new C_Chat(); ;
-            c_Chat.Msg = $"Test Message~~~~~~~";
+            C_TestChat c_Test_Chat = new C_TestChat();
+            c_Test_Chat.Chat = new C_Chat(); ;
+            c_Test_Chat.Chat.Msg = $"Test Message~~~~~~~";
 
             for (int i = 0; i < sessions.Count; i++)
             {
                 TestServerSession session = sessions[i];
 
-                c_Chat.TickCount = DateTime.UtcNow.Ticks;
+                c_Test_Chat.TickCount = DateTime.UtcNow.Ticks;
                 //c_Chat.TickCount = Environment.TickCount64;
 
-                session.Send(c_Chat);
+                session.Send(c_Test_Chat);
                 session.ProcessSend();
             }
         }
@@ -124,7 +125,7 @@ namespace DummyClient
             testServerSessionName = $"TestSession_{Interlocked.Increment(ref count)}";
         }
 
-        public void TestCompareRtt(S_Chat s_ChatPacket)
+        public void TestCompareRtt(S_TestChat s_ChatPacket)
         {
             long rttMs = DateTime.UtcNow.Ticks - s_ChatPacket.TickCount;
             //long rttMs = Environment.TickCount64 - s_ChatPacket.TickCount;
@@ -134,8 +135,8 @@ namespace DummyClient
                 maxRttMs = rttMs;
             rtts.Add(rttMs);
 
-            if (s_ChatPacket.UserId == 0)
-                Console.WriteLine($"[{testServerSessionName} -> User_{s_ChatPacket.UserId}]: {s_ChatPacket.Msg}");
+            if (s_ChatPacket.Chat.UserId == 0)
+                Console.WriteLine($"[{testServerSessionName} -> User_{s_ChatPacket.Chat.UserId}]: {s_ChatPacket.Chat.Msg}");
 
         }
     }
