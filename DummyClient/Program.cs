@@ -10,13 +10,13 @@ namespace DummyClient
 {
     internal class Program
     {
-        static TestServerSession serverSession;
-        static List<TestServerSession> sessions = new List<TestServerSession>();
+        static Session serverSession;
+        static List<Session> sessions = new List<Session>();
 
         static object _lock = new object();
 
         // testConnection * (1000 / testSendMs) = tps
-        static int testConnection = 10;
+        static int testConnection = 1;
         static int testSendMs = 100;
 
 
@@ -35,6 +35,7 @@ namespace DummyClient
                     lock (_lock)
                     {
                         serverSession = new TestServerSession(saea.ConnectSocket);
+                        //serverSession = new ServerSession(saea.ConnectSocket);
                         serverSession.OnConnect(saea.RemoteEndPoint);
                         sessions.Add(serverSession);
                         return serverSession;
@@ -50,10 +51,76 @@ namespace DummyClient
                 if (sessions.Count != testConnection)
                     continue;
 
-                break;
+                //break;
+                var readKey = Console.ReadKey();
+                switch (readKey)
+                {
+                    case { Key: ConsoleKey.Q }:
+                        {
+                            Console.WriteLine("Q Key Pressed. Sending C_SetNickname Messages...");
+
+                            var testServerSession = serverSession as TestServerSession;
+                            C_SetNickname c_SetNickname = new C_SetNickname();
+                            Console.WriteLine("Enter your nickname:");
+                            string nickname = Console.ReadLine();
+                            testServerSession.TempNickname = nickname;
+                            c_SetNickname.Nickname = nickname;
+
+                            // 테스트 로그
+                            string temp = testServerSession.Nickname;
+                            testServerSession.testLog = () =>
+                            {
+                                var temp1 = temp;
+                                Console.WriteLine($"{temp} -> {testServerSession.Nickname}");
+
+                            };
+
+                            testServerSession.Send(c_SetNickname);
+                            break;
+                        }
+                    case { Key: ConsoleKey.W }:
+                        {
+                            Console.WriteLine("W Key Pressed. Sending Test Messages...");
+
+                            var testServerSession = serverSession as TestServerSession;
+                            C_SetNickname c_SetNickname = new C_SetNickname();
+                            Console.WriteLine("Enter your nickname:");
+                            string nickname = Console.ReadLine();
+                            testServerSession.TempNickname = nickname;
+                            c_SetNickname.Nickname = nickname;
+
+                            // 테스트 로그
+                            string temp = testServerSession.Nickname;
+                            testServerSession.testLog = () =>
+                            {
+                                var temp1 = temp;
+                                Console.WriteLine($"{temp} -> {testServerSession.Nickname}");
+
+                            };
+
+                            testServerSession.Send(c_SetNickname);
+                            break;
+                        }
+                    case { Key: ConsoleKey.Escape }:
+                        {
+                            Console.WriteLine("Escape Key Pressed. Exiting...");
+                            return;
+                        }
+                    case { Key: ConsoleKey.Spacebar }:
+                        {
+                            Console.WriteLine("Spacebar Key Pressed. Sending Test Messages...");
+                            TestBoradcast();
+                            break;
+                        }
+                    default:
+                        {
+                            Console.WriteLine("Press Spacebar to send test messages or Escape to exit.");
+                            break;
+                        }
+                }
             }
 
-            TestRtt();
+            //TestRtt();
             Console.ReadKey();
         }
 
@@ -69,8 +136,9 @@ namespace DummyClient
                 {
                     stopwatch.Stop();
                     var stream = File.CreateText("./test.txt");
-                    foreach (var session in sessions)
+                    foreach (var item in sessions)
                     {
+                        var session = item as TestServerSession;
                         long totalRtt = 0;
                         for (int i = 0; i < session.rtts.Count; i++)
                         {
@@ -102,13 +170,12 @@ namespace DummyClient
 
             for (int i = 0; i < sessions.Count; i++)
             {
-                TestServerSession session = sessions[i];
+                TestServerSession session = sessions[i] as TestServerSession;
 
                 c_Test_Chat.TickCount = DateTime.UtcNow.Ticks;
                 //c_Chat.TickCount = Environment.TickCount64;
 
                 session.Send(c_Test_Chat);
-                session.ProcessSend();
             }
         }
     }
@@ -120,6 +187,8 @@ namespace DummyClient
         public long minRttMs = long.MaxValue;
         public long maxRttMs = 0;
         public List<long> rtts = new List<long>();
+
+        public Action testLog;
         public TestServerSession(Socket socket) : base(socket)
         {
             testServerSessionName = $"TestSession_{Interlocked.Increment(ref count)}";
@@ -138,6 +207,27 @@ namespace DummyClient
             if (s_ChatPacket.Chat.UserId == 0)
                 Console.WriteLine($"[{testServerSessionName} -> User_{s_ChatPacket.Chat.UserId}]: {s_ChatPacket.Chat.Msg}");
 
+        }
+
+        public override void OnConnect(EndPoint endPoint)
+        {
+            Console.WriteLine($"[{testServerSessionName}] Connected to {endPoint}");
+        }
+
+        public override void OnDisconnect(EndPoint endPoint)
+        {
+            Console.WriteLine($"[{testServerSessionName}] Disconnected from {endPoint}");
+        }
+
+        public override void OnRecvPacket(ArraySegment<byte> data)
+        {
+            PacketManager.Instance.InvokePacketHandler(this, data);
+            testLog?.Invoke();
+        }
+
+        public override void OnSend(int bytesTransferred)
+        {
+            //Console.WriteLine($"[{testServerSessionName}] Sent {bytesTransferred} bytes.");
         }
     }
 

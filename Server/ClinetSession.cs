@@ -14,6 +14,8 @@ namespace Server
     public class ClientSession : PacketSession
     {
         public int UserId { get; set; }
+        public string Nickname { get; set; }
+
         public ClientSession(Socket socket, int userId) : base(socket)
         {
             UserId = userId;

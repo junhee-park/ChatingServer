@@ -19,6 +19,20 @@ public class PacketManager
         _makePacket.Add((ushort)MsgId.SChat, MakePacket<S_Chat>);
         _handlers.Add((ushort)MsgId.SPing, PacketHandler.S_PingHandler);
         _makePacket.Add((ushort)MsgId.SPing, MakePacket<S_Ping>);
+        _handlers.Add((ushort)MsgId.SSetNickname, PacketHandler.S_SetNicknameHandler);
+        _makePacket.Add((ushort)MsgId.SSetNickname, MakePacket<S_SetNickname>);
+        _handlers.Add((ushort)MsgId.SCreateRoom, PacketHandler.S_CreateRoomHandler);
+        _makePacket.Add((ushort)MsgId.SCreateRoom, MakePacket<S_CreateRoom>);
+        _handlers.Add((ushort)MsgId.SDeleteRoom, PacketHandler.S_DeleteRoomHandler);
+        _makePacket.Add((ushort)MsgId.SDeleteRoom, MakePacket<S_DeleteRoom>);
+        _handlers.Add((ushort)MsgId.SRoomList, PacketHandler.S_RoomListHandler);
+        _makePacket.Add((ushort)MsgId.SRoomList, MakePacket<S_RoomList>);
+        _handlers.Add((ushort)MsgId.SEnterRoom, PacketHandler.S_EnterRoomHandler);
+        _makePacket.Add((ushort)MsgId.SEnterRoom, MakePacket<S_EnterRoom>);
+        _handlers.Add((ushort)MsgId.SUserList, PacketHandler.S_UserListHandler);
+        _makePacket.Add((ushort)MsgId.SUserList, MakePacket<S_UserList>);
+        _handlers.Add((ushort)MsgId.SLeaveRoom, PacketHandler.S_LeaveRoomHandler);
+        _makePacket.Add((ushort)MsgId.SLeaveRoom, MakePacket<S_LeaveRoom>);
         _handlers.Add((ushort)MsgId.STestChat, PacketHandler.S_TestChatHandler);
         _makePacket.Add((ushort)MsgId.STestChat, MakePacket<S_TestChat>);
 

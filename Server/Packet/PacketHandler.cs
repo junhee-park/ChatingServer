@@ -10,6 +10,7 @@ using Google.Protobuf;
 using ServerCore;
 using Google.Protobuf.Protocol;
 using Server;
+using Google.Protobuf.WellKnownTypes;
 
 /// <summary>
 /// 전송된 패킷을 처리하는 클래스.
@@ -32,9 +33,9 @@ public static class PacketHandler
         S_Chat s_Chat = new S_Chat();
         s_Chat.UserId = userId;
         s_Chat.Msg = c_ChatPacket.Msg;
-        s_Chat.TickCount = c_ChatPacket.TickCount;
+        s_Chat.Timestamp = Timestamp.FromDateTime(DateTime.UtcNow);
 
-        Program.Boardcast(s_Chat);
+        SessionManager.Instance.Boardcast(s_Chat);
     }
 
     public static void C_PingHandler(Session session, IMessage packet)
@@ -60,6 +61,106 @@ public static class PacketHandler
         s_chat.Msg = c_TestChatPacket.Chat.Msg;
         s_TestChat.Chat = s_chat;
         s_TestChat.TickCount = c_TestChatPacket.TickCount;
-        Program.Boardcast(s_TestChat);
+        SessionManager.Instance.Boardcast(s_TestChat);
     }
+
+    public static void C_SetNicknameHandler(Session session, IMessage packet)
+    {
+        ClientSession clientSession = session as ClientSession;
+        C_SetNickname c_SetNicknamePacket = packet as C_SetNickname;
+
+        // TODO: 닉네임 중복 체크 로직 추가 필요
+
+        clientSession.Nickname = c_SetNicknamePacket.Nickname;
+        // 패킷 생성
+        S_SetNickname s_SetNickname = new S_SetNickname();
+        s_SetNickname.Success = true;
+
+        clientSession.Send(s_SetNickname);
+    }
+
+    public static void C_CreateRoomHandler(Session session, IMessage packet)
+    {
+        ClientSession clientSession = session as ClientSession;
+        C_CreateRoom c_CreateRoomPacket = packet as C_CreateRoom;
+        // 유저 아이디 추출
+        int userId = clientSession.UserId;
+        // 패킷 생성
+        S_CreateRoom s_CreateRoom = new S_CreateRoom();
+
+        Room room = RoomManager.Instance.CreateRoom(c_CreateRoomPacket.RoomName, userId);
+        s_CreateRoom.RoomId = room.roomInfo.RoomId;
+        s_CreateRoom.Success = true;
+
+        clientSession.Send(s_CreateRoom);
+    }
+
+    public static void C_DeleteRoomHandler(Session session, IMessage packet)
+    {
+        ClientSession clientSession = session as ClientSession;
+        C_DeleteRoom c_DeleteRoomPacket = packet as C_DeleteRoom;
+        // 유저 아이디 추출
+        int userId = clientSession.UserId;
+        // 패킷 생성
+        S_DeleteRoom s_DeleteRoom = new S_DeleteRoom();
+        // TODO: 방 삭제
+        Room room = RoomManager.Instance.GetRoom(c_DeleteRoomPacket.RoomId);
+        bool success = RoomManager.Instance.RemoveRoom(c_DeleteRoomPacket.RoomId, userId);
+        s_DeleteRoom.Success = success;
+        room.Broadcast(s_DeleteRoom);
+    }
+
+    public static void C_RoomListHandler(Session session, IMessage packet)
+    {
+        ClientSession clientSession = session as ClientSession;
+        C_RoomList c_RoomListPacket = packet as C_RoomList;
+        // 유저 아이디 추출
+        int userId = clientSession.UserId;
+        // 패킷 생성
+        S_RoomList s_RoomList = new S_RoomList();
+        // 현재 존재하는 룸리스트 반환
+        foreach (Room room in RoomManager.Instance.rooms.Values)
+        {
+            s_RoomList.Rooms.Add(room.roomInfo);
+        }
+        clientSession.Send(s_RoomList);
+    }
+
+    public static void C_EnterRoomHandler(Session session, IMessage packet)
+    {
+        ClientSession clientSession = session as ClientSession;
+        C_EnterRoom c_EnterRoomPacket = packet as C_EnterRoom;
+        // 유저 아이디 추출
+        int userId = clientSession.UserId;
+        // 패킷 생성
+        S_EnterRoom s_EnterRoom = new S_EnterRoom();
+        // TODO: 룸 입장
+        SessionManager.Instance.Boardcast(s_EnterRoom);
+    }
+
+    public static void C_UserListHandler(Session session, IMessage packet)
+    {
+        ClientSession clientSession = session as ClientSession;
+        C_UserList c_UserListPacket = packet as C_UserList;
+        
+        int userId = clientSession.UserId;
+        // 패킷 생성
+        S_UserList s_UserList = new S_UserList();
+        // TODO: 현재 룸의 유저 리스트 전송
+        SessionManager.Instance.Boardcast(s_UserList);
+    }
+
+    public static void C_LeaveRoomHandler(Session session, IMessage packet)
+    {
+        ClientSession clientSession = session as ClientSession;
+        C_LeaveRoom c_LeaveRoomPacket = packet as C_LeaveRoom;
+        // 유저 아이디 추출
+        int userId = clientSession.UserId;
+        // 패킷 생성
+        S_LeaveRoom s_LeaveRoom = new S_LeaveRoom();
+        // TODO: 방 퇴장
+        SessionManager.Instance.Boardcast(s_LeaveRoom);
+    }
+
+
 }

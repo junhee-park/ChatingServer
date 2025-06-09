@@ -84,7 +84,7 @@ namespace ServerCore
         }
 
 
-        public void ProcessRecv(SocketAsyncEventArgs args)
+        void ProcessRecv(SocketAsyncEventArgs args)
         {
             if (_disconnect == 1)
                 return;
@@ -126,7 +126,7 @@ namespace ServerCore
             }
         }
 
-        public void RegisterSend(byte[] buffer)
+        protected void RegisterSend(byte[] buffer)
         {
             lock (_lock)
             {
@@ -137,7 +137,7 @@ namespace ServerCore
             }
         }
 
-        public void ProcessSend()
+        protected void ProcessSend()
         {
             if (_disconnect == 1)
                 return;
