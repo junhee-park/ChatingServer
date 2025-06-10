@@ -79,19 +79,38 @@ public static class PacketHandler
         clientSession.Send(s_SetNickname);
     }
 
+
+    /// <summary>
+    /// 방 생성 완료 시 생성 요청한 유저에게 방 생성 응답 패킷을 전송하는 핸들러.
+    /// 생성한 유저는 해당 방에 자동으로 입장하게 됨.
+    /// </summary>
+    /// <param name="session"></param>
+    /// <param name="packet"></param>
     public static void C_CreateRoomHandler(Session session, IMessage packet)
     {
         ClientSession clientSession = session as ClientSession;
         C_CreateRoom c_CreateRoomPacket = packet as C_CreateRoom;
+
         // 유저 아이디 추출
         int userId = clientSession.UserId;
         // 패킷 생성
         S_CreateRoom s_CreateRoom = new S_CreateRoom();
 
-        Room room = RoomManager.Instance.CreateRoom(c_CreateRoomPacket.RoomName, userId);
-        s_CreateRoom.RoomId = room.roomInfo.RoomId;
-        s_CreateRoom.Success = true;
-
+        if (clientSession.CurrentState != State.Lobby)
+        {
+            Console.WriteLine($"[C_CreateRoomHandler] User {clientSession.UserId} is not in Lobby state.");
+            s_CreateRoom.Success = false;
+            s_CreateRoom.Reason = "You must be in the Lobby to create a room.";
+        }
+        else
+        {
+            Room room = RoomManager.Instance.CreateRoom(c_CreateRoomPacket.RoomName, userId);
+            room.AddUser(clientSession);
+            s_CreateRoom.RoomId = room.roomInfo.RoomId;
+            s_CreateRoom.Success = true;
+            clientSession.CurrentState = State.Room;
+            clientSession.Room = room; // 현재 방 정보 설정
+        }
         clientSession.Send(s_CreateRoom);
     }
 
@@ -99,17 +118,35 @@ public static class PacketHandler
     {
         ClientSession clientSession = session as ClientSession;
         C_DeleteRoom c_DeleteRoomPacket = packet as C_DeleteRoom;
-        // 유저 아이디 추출
-        int userId = clientSession.UserId;
+
         // 패킷 생성
         S_DeleteRoom s_DeleteRoom = new S_DeleteRoom();
-        // TODO: 방 삭제
-        Room room = RoomManager.Instance.GetRoom(c_DeleteRoomPacket.RoomId);
-        bool success = RoomManager.Instance.RemoveRoom(c_DeleteRoomPacket.RoomId, userId);
+        RoomInfo roomInfo = clientSession.Room.roomInfo;
+
+        bool success = RoomManager.Instance.RemoveRoom(roomInfo.RoomId, clientSession.UserId);
         s_DeleteRoom.Success = success;
-        room.Broadcast(s_DeleteRoom);
+        if (success)
+        {
+            foreach(var room in RoomManager.Instance.rooms.Values)
+            {
+                s_DeleteRoom.Rooms.Add(room.roomInfo);
+            }
+            clientSession.Room.Broadcast(s_DeleteRoom);
+            clientSession.CurrentState = State.Lobby; // 방 삭제 후 Lobby 상태로 변경
+        }
+        else
+        {
+            Console.WriteLine($"[C_DeleteRoomHandler] User {clientSession.UserId} failed to delete room {roomInfo.RoomId}.");
+            s_DeleteRoom.Reason = "Failed to delete room. You must be the room master.";
+            clientSession.Send(s_DeleteRoom);
+        }
     }
 
+    /// <summary>
+    /// 룸 리스트 요청 핸들러.
+    /// </summary>
+    /// <param name="session"></param>
+    /// <param name="packet"></param>
     public static void C_RoomListHandler(Session session, IMessage packet)
     {
         ClientSession clientSession = session as ClientSession;

@@ -11,10 +11,20 @@ using Google.Protobuf.Protocol;
 
 namespace Server
 {
+    public enum State
+    {
+        None = 0,
+        Lobby = 1,
+        Room = 2
+    }
+
     public class ClientSession : PacketSession
     {
         public int UserId { get; set; }
         public string Nickname { get; set; }
+        public Room Room { get; set; } = null; // 현재 방 정보 (null이면 방에 없음)
+
+        public State CurrentState { get; set; } = State.None; // 현재 상태 (Lobby, Room 등)
 
         public ClientSession(Socket socket, int userId) : base(socket)
         {
@@ -47,6 +57,7 @@ namespace Server
         public override void OnConnect(EndPoint endPoint)
         {
             Console.WriteLine($"OnConnect User_{UserId} {endPoint.ToString()}");
+            CurrentState = State.Lobby; // 연결 시 기본 상태를 Lobby로 설정
         }
 
         public override void OnDisconnect(EndPoint endPoint)

@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Google.Protobuf;
 using Google.Protobuf.Protocol;
+using ServerCore;
 
 namespace Server
 {
     public class Room
     {
         public RoomInfo roomInfo;
-        public Dictionary<int, ClientSession> users = new Dictionary<int, ClientSession>();
 
         public Room(int id, string name, int roomMasterUserId)
         {
@@ -21,21 +21,14 @@ namespace Server
             roomInfo.RoomMasterUserId = roomMasterUserId;
         }
 
-        public bool AddUser(ClientSession session)
+        public void AddUser(ClientSession session)
         {
-            bool result = users.TryAdd(session.UserId, session);
-            if (result)
-                roomInfo.UserIds.Add(session.UserId);
-            return result;
+            roomInfo.UserIds.Add(session.UserId);
         }
 
         public bool LeaveUser(int userId)
         {
-            bool result = users.Remove(userId);
-            if (result)
-                roomInfo.UserIds.Remove(userId);
-
-            return result;
+            return roomInfo.UserIds.Remove(userId);
         }
 
         /// <summary>
@@ -44,9 +37,11 @@ namespace Server
         /// <param name="message"></param>
         public void Broadcast(IMessage message)
         {
-            foreach (var user in users.Values)
+            foreach (var userId in roomInfo.UserIds)
             {
-                user.Send(message);
+                SessionManager.Instance.sessions.TryGetValue(userId, out Session session);
+                var clinetSession = session as ClientSession;
+                clinetSession?.Send(message);
             }
         }
     }

@@ -43,78 +43,98 @@ namespace DummyClient
                 },
                 testConnection);
 
-            
             while (true)
             {
                 Thread.Sleep(1000);
 
-                if (sessions.Count != testConnection)
-                    continue;
+                if (sessions.Count == testConnection)
+                    break;
+            }
 
-                //break;
+            SetNickname();
+
+            while (true)
+            {
+                Console.WriteLine("\nPress Q to set nickname, W to create room, E to list rooms, Spacebar to send test messages, or Escape to exit.");
                 var readKey = Console.ReadKey();
                 switch (readKey)
                 {
                     case { Key: ConsoleKey.Q }:
                         {
-                            Console.WriteLine("Q Key Pressed. Sending C_SetNickname Messages...");
-
-                            var testServerSession = serverSession as TestServerSession;
-                            C_SetNickname c_SetNickname = new C_SetNickname();
-                            Console.WriteLine("Enter your nickname:");
-                            string nickname = Console.ReadLine();
-                            testServerSession.TempNickname = nickname;
-                            c_SetNickname.Nickname = nickname;
-
-                            // 테스트 로그
-                            string temp = testServerSession.Nickname;
-                            testServerSession.testLog = () =>
-                            {
-                                var temp1 = temp;
-                                Console.WriteLine($"{temp} -> {testServerSession.Nickname}");
-
-                            };
-
-                            testServerSession.Send(c_SetNickname);
+                            SetNickname();
                             break;
                         }
                     case { Key: ConsoleKey.W }:
                         {
-                            Console.WriteLine("W Key Pressed. Sending Test Messages...");
+                            Console.WriteLine("\nW Key Pressed. Sending C_CreateRoom Messages...");
 
                             var testServerSession = serverSession as TestServerSession;
-                            C_SetNickname c_SetNickname = new C_SetNickname();
-                            Console.WriteLine("Enter your nickname:");
-                            string nickname = Console.ReadLine();
-                            testServerSession.TempNickname = nickname;
-                            c_SetNickname.Nickname = nickname;
+                            C_CreateRoom c_CreateRoom = new C_CreateRoom();
+                            Console.Write("Enter Room Name:");
+                            c_CreateRoom.RoomName = Console.ReadLine();
 
                             // 테스트 로그
-                            string temp = testServerSession.Nickname;
                             testServerSession.testLog = () =>
                             {
-                                var temp1 = temp;
-                                Console.WriteLine($"{temp} -> {testServerSession.Nickname}");
-
+                                Console.WriteLine($"C_CreateRoom Send Complete!");
                             };
 
-                            testServerSession.Send(c_SetNickname);
+                            testServerSession.Send(c_CreateRoom);
+                            break;
+                        }
+                    case { Key: ConsoleKey.E }:
+                        {
+                            Console.WriteLine("\nE Key Pressed. Sending C_RoomList Messages...");
+
+                            var testServerSession = serverSession as TestServerSession;
+                            C_RoomList c_RoomList = new C_RoomList();
+
+                            // 테스트 로그
+                            testServerSession.testLog = () =>
+                            {
+                                Console.WriteLine($"C_RoomList Send Complete!");
+                                foreach( var room in RoomManager.Instance.rooms )
+                                {
+                                    Console.WriteLine($"[{room.Key}] {room.Value.RoomName}");
+                                }
+                            };
+
+                            testServerSession.Send(c_RoomList);
+                            break;
+                        }
+                    case { Key: ConsoleKey.R }:
+                        {
+                            Console.WriteLine("\nE Key Pressed. Sending C_DeleteRoom Messages...");
+
+                            var testServerSession = serverSession as TestServerSession;
+                            C_DeleteRoom c_DeleteRoom = new C_DeleteRoom();
+
+                            // 테스트 로그
+                            testServerSession.testLog = () =>
+                            {
+                                foreach(var room in RoomManager.Instance.rooms)
+                                {
+                                    Console.WriteLine($"[{room.Key}] {room.Value.RoomName}");
+                                }
+                            };
+
+                            testServerSession.Send(c_DeleteRoom);
                             break;
                         }
                     case { Key: ConsoleKey.Escape }:
                         {
-                            Console.WriteLine("Escape Key Pressed. Exiting...");
+                            Console.WriteLine("\nEscape Key Pressed. Exiting...");
                             return;
                         }
                     case { Key: ConsoleKey.Spacebar }:
                         {
-                            Console.WriteLine("Spacebar Key Pressed. Sending Test Messages...");
+                            Console.WriteLine("\nSpacebar Key Pressed. Sending Test Messages...");
                             TestBoradcast();
                             break;
                         }
                     default:
                         {
-                            Console.WriteLine("Press Spacebar to send test messages or Escape to exit.");
+                            Console.WriteLine("\nPress Spacebar to send test messages or Escape to exit.");
                             break;
                         }
                 }
@@ -122,6 +142,29 @@ namespace DummyClient
 
             //TestRtt();
             Console.ReadKey();
+        }
+
+        public static void SetNickname()
+        {
+            Console.WriteLine("\nQ Key Pressed. Sending C_SetNickname Messages...");
+
+            var testServerSession = serverSession as TestServerSession;
+            C_SetNickname c_SetNickname = new C_SetNickname();
+            Console.Write("Enter your nickname:");
+            string nickname = Console.ReadLine();
+            testServerSession.TempNickname = nickname;
+            c_SetNickname.Nickname = nickname;
+
+            // 테스트 로그
+            string temp = testServerSession.Nickname;
+            testServerSession.testLog = () =>
+            {
+                var temp1 = temp;
+                Console.WriteLine($"{temp} -> {testServerSession.Nickname}");
+
+            };
+
+            testServerSession.Send(c_SetNickname);
         }
 
         public static void TestRtt()
