@@ -54,7 +54,7 @@ namespace Server
         {
             ClientSession user = (ClientSession)args.UserToken;
             user.Disconnect();
-            sessions.Remove(user.UserId);
+            sessions.Remove(user.UserInfo.UserId);
 
         }
     }

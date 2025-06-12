@@ -23,7 +23,7 @@ public static class PacketHandler
         ServerSession serverSession = session as ServerSession;
         S_Chat s_ChatPacket = packet as S_Chat;
 
-
+        serverSession.ViewManager.ShowText($"{s_ChatPacket.UserId}[{s_ChatPacket.Timestamp.ToDateTime()}]: {s_ChatPacket.Msg}");
     }
 
     public static void S_PingHandler(Session session, IMessage packet)
@@ -51,8 +51,8 @@ public static class PacketHandler
 
         if (s_SetNicknamePacket.Success)
         {
-            serverSession.Nickname = serverSession.TempNickname;
-            serverSession.UserId = serverSession.UserId;
+            serverSession.UserInfo.Nickname = serverSession.TempNickname;
+            serverSession.UserInfo.UserId = s_SetNicknamePacket.UserId;
         }
     }
 
@@ -68,14 +68,7 @@ public static class PacketHandler
         }
 
         // 서버에서 할당한 방 아이디와 임시 방 이름, 방생성 요청한 유저 아이디를 현재 방 인포에 추가
-        var roomManager = RoomManager.Instance;
-        var roominfo = new RoomInfo();
-        roominfo.RoomId = s_CreateRoomPacket.RoomId;
-        roominfo.RoomName = roomManager.TempRoomName;
-        roominfo.RoomMasterUserId = serverSession.UserId;
-        roominfo.UserIds.Add(serverSession.UserId);
-        roomManager.CurrentRoom = roominfo;
-        roomManager.rooms.Add(roominfo.RoomId, roominfo);
+        RoomManager.Instance.CreateRoom(s_CreateRoomPacket.RoomId, serverSession.UserInfo.UserId);
     }
 
     public static void S_DeleteRoomHandler(Session session, IMessage packet)
@@ -90,7 +83,6 @@ public static class PacketHandler
         }
         var roomManager = RoomManager.Instance;
         // 방 삭제 로직
-        roomManager.rooms.Clear();
         roomManager.Refresh(s_DeleteRoomPacket.Rooms);
         roomManager.CurrentRoom = null; // 현재 방 정보 초기화
     }
@@ -108,33 +100,44 @@ public static class PacketHandler
     {
         ServerSession serverSession = session as ServerSession;
         S_EnterRoom s_EnterRoomPacket = packet as S_EnterRoom;
-        // 서버에서 클라이언트로 방 입장 응답 패킷 생성
-        C_EnterRoom c_EnterRoom = new C_EnterRoom();
-        // TODO: 방 입장 로직 추가 필요
-        // 클라이언트로 방 입장 응답 전송
-        serverSession.Send(c_EnterRoom);
+
+        if (!s_EnterRoomPacket.Success)
+        {
+            Console.WriteLine(s_EnterRoomPacket.Reason);
+            return;
+        }
+        RoomManager.Instance.AddUserToRoom(s_EnterRoomPacket.RoomInfo.RoomId, serverSession.UserInfo);
+
+    }
+
+    /// <summary>
+    /// 방 또는 로비에 있을 경우 누군가 어떤 방 입장했을 때 호출되는 핸들러.
+    /// </summary>
+    /// <param name="session"></param>
+    /// <param name="packet"></param>
+    public static void S_EnterUserHandler(Session session, IMessage packet)
+    {
+        ServerSession serverSession = session as ServerSession;
+        S_EnterUser s_EnterUserPacket = packet as S_EnterUser;
+
+        var roomManager = RoomManager.Instance;
+        roomManager.AddUserToRoom(s_EnterUserPacket.RoomId, serverSession.UserInfo);
     }
 
     public static void S_UserListHandler(Session session, IMessage packet)
     {
         ServerSession serverSession = session as ServerSession;
         S_UserList s_UserListPacket = packet as S_UserList;
-        // 서버에서 클라이��트로 유저 목록 응답 패킷 생성
-        C_UserList c_UserList = new C_UserList();
-        // TODO: 유저 목록 생성 로직 추가 필요
-        // 클라이언트로 유저 목록 응답 전송
-        serverSession.Send(c_UserList);
+
+        // TODO: 유저 리스트 갱신
     }
 
     public static void S_LeaveRoomHandler(Session session, IMessage packet)
     {
         ServerSession serverSession = session as ServerSession;
         S_LeaveRoom s_LeaveRoomPacket = packet as S_LeaveRoom;
-        // 서버에서 클라이언트로 방 나가기 응답 패킷 생성
-        C_LeaveRoom c_LeaveRoom = new C_LeaveRoom();
-        // TODO: 방 나가기 로직 추가 필요
-        // 클라이언트로 방 나가기 응답 전송
-        serverSession.Send(c_LeaveRoom);
+
+        RoomManager.Instance.LeaveRoom(serverSession.UserInfo);
     }
 
 }

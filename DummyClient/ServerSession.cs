@@ -14,13 +14,19 @@ namespace DummyClient
 {
     public class ServerSession : PacketSession
     {
-        public int UserId { get; set; }
-        public string Nickname { get; set; } = string.Empty; // 유저 이름
+        public UserInfo UserInfo { get; set; } = new UserInfo(); // 유저 정보
         public string TempNickname { get; set; } = string.Empty; // 유저 이름 변경을 위한 임시 이름
+
+        public IViewManager ViewManager { get; set; } // 뷰 매니저
 
         public ServerSession(Socket socket) : base(socket)
         {
 
+        }
+
+        public virtual void InitViewManager(IViewManager viewManager)
+        {
+            ViewManager = viewManager;
         }
 
         public void Send(IMessage message)

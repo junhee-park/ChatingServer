@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Google.Protobuf;
 using Google.Protobuf.Protocol;
+using ServerCore;
 
 namespace Server
 {
@@ -17,7 +19,9 @@ namespace Server
 
         public int nextRoomId = 0; // Room ID를 생성하기 위한 카운터
         public ConcurrentDictionary<int, Room> rooms = new ConcurrentDictionary<int, Room>();
-        public HashSet<int> userIds = new HashSet<int>(); // 방에 참여 중인 사용자 ID 목록
+        HashSet<int> userIds = new HashSet<int>(); // 로비에 존재하는 유저의 id목록
+
+        object _lock = new object();
 
         public Room CreateRoom(string roomName, int roomMasterId)
         {
@@ -40,9 +44,9 @@ namespace Server
                 return false;
             if (room.roomInfo.RoomMasterUserId != masterUserId)
                 return false; // 방장만 방을 삭제할 수 있음
-            foreach (int userId in room.roomInfo.UserIds)
+            foreach (var userInfo in room.roomInfo.UserInfos)
             {
-                userIds.Add(userId);
+                userIds.Add(userInfo.UserId);
             }
 
             return rooms.TryRemove(new KeyValuePair<int, Room>(roomId, room));
@@ -56,16 +60,36 @@ namespace Server
             }
         }
 
+        public void AddUserToLobby(int userId)
+        {
+            lock (_lock)
+            {
+                userIds.Add(userId); // 로비에 유저 추가
+            }
+        }
+
         public bool LeaveUserFromRoom(int roomId, int userId)
         {
             if (rooms.TryGetValue(roomId, out Room room))
             {
-                userIds.Remove(userId); // 사용자 목록에서 제거
+                AddUserToLobby(userId);
+
                 return room.LeaveUser(userId);
             }
             return false;
         }
 
+        public void BroadcastToLobby(IMessage message)
+        {
+            foreach (var userId in userIds)
+            {
+                if (SessionManager.Instance.sessions.TryGetValue(userId, out Session session))
+                {
+                    ClientSession clientSession = session as ClientSession;
 
+                    clientSession.Send(message);
+                }
+            }
+        }
     }
 }

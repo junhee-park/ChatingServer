@@ -10,7 +10,7 @@ namespace DummyClient
 {
     internal class Program
     {
-        static Session serverSession;
+        static ServerSession serverSession;
         static List<Session> sessions = new List<Session>();
 
         static object _lock = new object();
@@ -36,6 +36,7 @@ namespace DummyClient
                     {
                         serverSession = new TestServerSession(saea.ConnectSocket);
                         //serverSession = new ServerSession(saea.ConnectSocket);
+                        serverSession.InitViewManager(new ConsoleViewManager());
                         serverSession.OnConnect(saea.RemoteEndPoint);
                         sessions.Add(serverSession);
                         return serverSession;
@@ -56,6 +57,8 @@ namespace DummyClient
             while (true)
             {
                 Console.WriteLine("\nPress Q to set nickname, W to create room, E to list rooms, Spacebar to send test messages, or Escape to exit.");
+                Console.WriteLine("Press R to delete room, T to enter room, Y to delete current room, U to leave room.");
+                Console.WriteLine("Press A to send chat message, S to check room list, D to check lobby user list, F to check current room user list.");
                 var readKey = Console.ReadKey();
                 switch (readKey)
                 {
@@ -93,7 +96,7 @@ namespace DummyClient
                             testServerSession.testLog = () =>
                             {
                                 Console.WriteLine($"C_RoomList Send Complete!");
-                                foreach( var room in RoomManager.Instance.rooms )
+                                foreach( var room in RoomManager.Instance.Rooms )
                                 {
                                     Console.WriteLine($"[{room.Key}] {room.Value.RoomName}");
                                 }
@@ -112,13 +115,177 @@ namespace DummyClient
                             // 테스트 로그
                             testServerSession.testLog = () =>
                             {
-                                foreach(var room in RoomManager.Instance.rooms)
+                                foreach(var room in RoomManager.Instance.Rooms)
                                 {
                                     Console.WriteLine($"[{room.Key}] {room.Value.RoomName}");
                                 }
                             };
 
                             testServerSession.Send(c_DeleteRoom);
+                            break;
+                        }
+                    case { Key: ConsoleKey.T }:
+                        {
+                            Console.WriteLine("\nT Key Pressed. Sending C_EnterRoom Messages...");
+
+                            var testServerSession = serverSession as TestServerSession;
+                            C_EnterRoom c_EnterRoom = new C_EnterRoom();
+
+                            Console.Write("Enter Room Id:");
+                            string roomIdInput = Console.ReadLine();
+                            if (int.TryParse(roomIdInput, out int roomId))
+                            {
+                                c_EnterRoom.RoomId = roomId;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Invalid Room Id. Please enter a valid number.");
+                                continue;
+                            }
+
+                            // 테스트 로그
+                            testServerSession.testLog = () =>
+                            {
+                                if (RoomManager.Instance.CurrentRoom == null)
+                                    return;
+                                Console.WriteLine($"[{RoomManager.Instance.CurrentRoom.RoomName}] {RoomManager.Instance.CurrentRoom.RoomName} 입장");
+                                foreach (var user in RoomManager.Instance.CurrentRoom.UserInfos)
+                                {
+                                    Console.WriteLine($"UserId: {user.UserId}, Nickname: {user.Nickname}");
+                                }
+                            };
+
+                            testServerSession.Send(c_EnterRoom);
+                            break;
+                        }
+                    case { Key: ConsoleKey.Y }:
+                        {
+                            Console.WriteLine("\nY Key Pressed. Sending C_EnterRoom Messages...");
+
+                            var testServerSession = serverSession as TestServerSession;
+                            C_DeleteRoom c_deleteRoom = new C_DeleteRoom();
+
+                            var currentRoom = RoomManager.Instance.CurrentRoom;
+
+                            // 테스트 로그
+                            testServerSession.testLog = () =>
+                            {
+                                if (!RoomManager.Instance.Rooms.ContainsValue(currentRoom))
+                                {
+                                    Console.WriteLine($"{currentRoom.RoomName} 방 삭제 완료");
+                                }
+                            };
+
+                            testServerSession.Send(c_deleteRoom);
+                            break;
+                        }
+                    case { Key: ConsoleKey.U }:
+                        {
+                            Console.WriteLine("\nU Key Pressed. Sending C_LeaveRoom Messages...");
+
+                            var testServerSession = serverSession as TestServerSession;
+                            C_LeaveRoom c_LeaveRoom = new C_LeaveRoom();
+
+                            var currentRoom = RoomManager.Instance.CurrentRoom;
+
+                            // 테스트 로그
+                            testServerSession.testLog = () =>
+                            {
+                                if (RoomManager.Instance.Rooms.ContainsValue(currentRoom))
+                                {
+                                    foreach(var user in currentRoom.UserInfos)
+                                    {
+                                        if (user.UserId == testServerSession.UserInfo.UserId)
+                                        {
+                                            Console.WriteLine($"문제 발생");
+                                        }
+                                    }
+                                }
+                            };
+
+                            testServerSession.Send(c_LeaveRoom);
+                            break;
+                        }
+                    case { Key: ConsoleKey.A }:
+                        {
+                            Console.WriteLine("\nA Key Pressed. Sending C_LeaveRoom Messages...");
+
+                            var testServerSession = serverSession as TestServerSession;
+                            C_Chat c_Chat = new C_Chat();
+
+                            Console.Write($"Input Message: ");
+                            string message = Console.ReadLine();
+
+                            c_Chat.Msg = message;
+
+                            // 테스트 로그
+                            testServerSession.testLog = () =>
+                            {
+                                
+                            };
+
+                            testServerSession.Send(c_Chat);
+                            break;
+                        }
+                    case { Key: ConsoleKey.S }:
+                        {
+                            Console.WriteLine("\nS Key Pressed. 패킷을 보내지 않고 현재 룸 리스트 확인");
+
+                            RoomManager roomManager = RoomManager.Instance;
+                            if (roomManager.Rooms.Count == 0)
+                            {
+                                Console.WriteLine("No rooms available.");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Available Rooms:");
+                                foreach (var room in roomManager.Rooms)
+                                {
+                                    Console.WriteLine($"[{room.Key}] {room.Value.RoomName}");
+                                }
+                            }
+
+                            break;
+                        }
+                    case { Key: ConsoleKey.D }:
+                        {
+                            Console.WriteLine("\nS Key Pressed. 패킷을 보내지 않고 현재 로비 유저 리스트 확인");
+
+                            RoomManager roomManager = RoomManager.Instance;
+                            if (roomManager.UserIds.Count == 0)
+                            {
+                                Console.WriteLine("No users available in the lobby.");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Users in Lobby:");
+                                foreach (var userId in roomManager.UserIds)
+                                {
+                                    Console.WriteLine($"UserId: {userId}");
+                                }
+                            }
+
+                            break;
+                        }
+                    case { Key: ConsoleKey.F }:
+                        {
+                            Console.WriteLine("\nF Key Pressed. 패킷을 보내지 않고 현재 방 유저 리스트 확인");
+
+                            RoomManager roomManager = RoomManager.Instance;
+                            if (roomManager.CurrentRoom == null)
+                            {
+                                Console.WriteLine("You are not in any room.");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Current Room: {roomManager.CurrentRoom.RoomName}");
+                                Console.WriteLine("Users in Current Room:");
+                                foreach (var user in roomManager.CurrentRoom.UserInfos)
+                                {
+                                    Console.WriteLine($"UserId: {user.UserId}, Nickname: {user.Nickname}");
+                                }
+                            }
+
                             break;
                         }
                     case { Key: ConsoleKey.Escape }:
@@ -156,11 +323,11 @@ namespace DummyClient
             c_SetNickname.Nickname = nickname;
 
             // 테스트 로그
-            string temp = testServerSession.Nickname;
+            string temp = testServerSession.UserInfo.Nickname;
             testServerSession.testLog = () =>
             {
-                var temp1 = temp;
-                Console.WriteLine($"{temp} -> {testServerSession.Nickname}");
+
+                Console.WriteLine($"{temp} -> {testServerSession.TempNickname}");
 
             };
 
@@ -250,6 +417,11 @@ namespace DummyClient
             if (s_ChatPacket.Chat.UserId == 0)
                 Console.WriteLine($"[{testServerSessionName} -> User_{s_ChatPacket.Chat.UserId}]: {s_ChatPacket.Chat.Msg}");
 
+        }
+
+        public override void InitViewManager(IViewManager viewManager)
+        {
+            base.InitViewManager(viewManager);
         }
 
         public override void OnConnect(EndPoint endPoint)

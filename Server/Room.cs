@@ -12,6 +12,7 @@ namespace Server
     public class Room
     {
         public RoomInfo roomInfo;
+        public object _lock = new object(); // 멀티스레드 환경에서 안전하게 사용하기 위한 락
 
         public Room(int id, string name, int roomMasterUserId)
         {
@@ -23,12 +24,32 @@ namespace Server
 
         public void AddUser(ClientSession session)
         {
-            roomInfo.UserIds.Add(session.UserId);
+            lock (_lock)
+            {
+                if (roomInfo.UserInfos.Contains(session.UserInfo))
+                {
+                    Console.WriteLine($"User {session.UserInfo.UserId} is already in the room {roomInfo.RoomId}.");
+                    return; // 이미 방에 있는 유저는 추가하지 않음
+                }
+                roomInfo.UserInfos.Add(session.UserInfo);
+            }
         }
 
         public bool LeaveUser(int userId)
         {
-            return roomInfo.UserIds.Remove(userId);
+            lock (_lock)
+            {
+                bool result = false;
+                foreach (var userInfo in roomInfo.UserInfos)
+                {
+                    if (userInfo.UserId == userId)
+                    {
+                        result = roomInfo.UserInfos.Remove(userInfo);
+                        break;
+                    }
+                }
+                return result;
+            }
         }
 
         /// <summary>
@@ -37,11 +58,19 @@ namespace Server
         /// <param name="message"></param>
         public void Broadcast(IMessage message)
         {
-            foreach (var userId in roomInfo.UserIds)
+            lock (_lock)
             {
-                SessionManager.Instance.sessions.TryGetValue(userId, out Session session);
-                var clinetSession = session as ClientSession;
-                clinetSession?.Send(message);
+                if (roomInfo.UserInfos.Count == 0)
+                {
+                    Console.WriteLine($"No users in room {roomInfo.RoomId} to broadcast message.");
+                    return; // 방에 유저가 없으면 브로드캐스트하지 않음
+                }
+                foreach (var userInfo in roomInfo.UserInfos)
+                {
+                    SessionManager.Instance.sessions.TryGetValue(userInfo.UserId, out Session session);
+                    var clinetSession = session as ClientSession;
+                    clinetSession?.Send(message);
+                }
             }
         }
     }

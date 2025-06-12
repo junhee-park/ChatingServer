@@ -20,15 +20,14 @@ namespace Server
 
     public class ClientSession : PacketSession
     {
-        public int UserId { get; set; }
-        public string Nickname { get; set; }
+        public UserInfo UserInfo { get; set; } = new UserInfo(); // 유저 정보
         public Room Room { get; set; } = null; // 현재 방 정보 (null이면 방에 없음)
 
         public State CurrentState { get; set; } = State.None; // 현재 상태 (Lobby, Room 등)
 
         public ClientSession(Socket socket, int userId) : base(socket)
         {
-            UserId = userId;
+            UserInfo.UserId = userId;
         }
 
         public void Send(IMessage message)
@@ -56,13 +55,13 @@ namespace Server
 
         public override void OnConnect(EndPoint endPoint)
         {
-            Console.WriteLine($"OnConnect User_{UserId} {endPoint.ToString()}");
+            Console.WriteLine($"OnConnect User_{UserInfo.UserId} {endPoint.ToString()}");
             CurrentState = State.Lobby; // 연결 시 기본 상태를 Lobby로 설정
         }
 
         public override void OnDisconnect(EndPoint endPoint)
         {
-            Console.WriteLine($"OnDisconnect User_{UserId} {endPoint.ToString()}");
+            Console.WriteLine($"OnDisconnect User_{UserInfo.UserId} {endPoint.ToString()}");
         }
     }
 }
