@@ -19,7 +19,7 @@ namespace Server
 
         public int nextRoomId = 0; // Room ID를 생성하기 위한 카운터
         public ConcurrentDictionary<int, Room> rooms = new ConcurrentDictionary<int, Room>();
-        HashSet<int> userIds = new HashSet<int>(); // 로비에 존재하는 유저의 id목록
+        public HashSet<int> userIds = new HashSet<int>(); // 로비에 존재하는 유저의 id목록
 
         object _lock = new object();
 
@@ -83,10 +83,8 @@ namespace Server
         {
             foreach (var userId in userIds)
             {
-                if (SessionManager.Instance.sessions.TryGetValue(userId, out Session session))
+                if (SessionManager.Instance.clientSessions.TryGetValue(userId, out ClientSession clientSession))
                 {
-                    ClientSession clientSession = session as ClientSession;
-
                     clientSession.Send(message);
                 }
             }

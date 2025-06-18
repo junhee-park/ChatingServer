@@ -17,19 +17,19 @@ namespace Server
         public static SessionManager Instance { get { return _instance; } }
         #endregion
 
-        public Dictionary<int, Session> sessions = new Dictionary<int, Session>();
+        public Dictionary<int, ClientSession> clientSessions = new Dictionary<int, ClientSession>();
         int incSessionId = 0;
 
         static object _lock = new object();
 
 
-        public Session CreateSession(SocketAsyncEventArgs args)
+        public ClientSession CreateSession(SocketAsyncEventArgs args)
         {
             lock (_lock)
             {
                 ClientSession session = new ClientSession(args.AcceptSocket, incSessionId);
                 session.OnConnect(session.Socket.RemoteEndPoint);
-                sessions.Add(incSessionId, session);
+                clientSessions.Add(incSessionId, session);
 
                 incSessionId += 1;
                 return session;
@@ -42,9 +42,9 @@ namespace Server
         /// <param name="data"></param>
         public void Boardcast(IMessage data)
         {
-            foreach (var kvIdUser in sessions)
+            foreach (var kvIdUser in clientSessions)
             {
-                ClientSession session = (ClientSession)kvIdUser.Value;
+                ClientSession session = kvIdUser.Value;
 
                 session.Send(data);
             }
@@ -54,7 +54,7 @@ namespace Server
         {
             ClientSession user = (ClientSession)args.UserToken;
             user.Disconnect();
-            sessions.Remove(user.UserInfo.UserId);
+            clientSessions.Remove(user.UserInfo.UserId);
 
         }
     }

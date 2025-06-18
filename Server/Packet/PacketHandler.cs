@@ -224,8 +224,37 @@ public static class PacketHandler
         int userId = clientSession.UserInfo.UserId;
         // 패킷 생성
         S_UserList s_UserList = new S_UserList();
-        // TODO: 현재 룸의 유저 리스트 전송
-        SessionManager.Instance.Boardcast(s_UserList);
+
+        // 로비에 있을 경우 로비 유저 리스트 전송
+        if (clientSession.CurrentState == State.Lobby)
+        {
+            foreach (int id in RoomManager.Instance.userIds)
+            {
+                ClientSession userSession = SessionManager.Instance.clientSessions[id];
+                UserInfo userInfo = userSession.UserInfo;
+                s_UserList.UserInfos.Add(userInfo);
+            }
+            clientSession.Send(s_UserList);
+            return;
+        }
+        else
+        {
+            // 룸에 있을 경우 룸 유저 리스트 전송
+            if (clientSession.CurrentState == State.Room && clientSession.Room != null)
+            {
+                foreach (UserInfo userInfo in clientSession.Room.roomInfo.UserInfos)
+                {
+                    s_UserList.UserInfos.Add(userInfo);
+                }
+            }
+            else
+            {
+                Console.WriteLine($"[C_UserListHandler] User {userId} is not in a room or lobby.");
+                return; // 현재 상태가 Lobby나 Room이 아닐 경우 처리하지 않음
+            }
+        }
+
+        clientSession.Send(s_UserList);
     }
 
     public static void C_LeaveRoomHandler(Session session, IMessage packet)

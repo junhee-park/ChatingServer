@@ -252,16 +252,16 @@ namespace DummyClient
                             Console.WriteLine("\nS Key Pressed. 패킷을 보내지 않고 현재 로비 유저 리스트 확인");
 
                             RoomManager roomManager = RoomManager.Instance;
-                            if (roomManager.UserIds.Count == 0)
+                            if (roomManager.UserInfos.Count == 0)
                             {
                                 Console.WriteLine("No users available in the lobby.");
                             }
                             else
                             {
                                 Console.WriteLine("Users in Lobby:");
-                                foreach (var userId in roomManager.UserIds)
+                                foreach (var userInfo in roomManager.UserInfos)
                                 {
-                                    Console.WriteLine($"UserId: {userId}");
+                                    Console.WriteLine($"UserId: {userInfo.Key}, Nickname: {userInfo.Value.Nickname}");
                                 }
                             }
 

@@ -1,18 +1,128 @@
 syntax = "proto3";
 package Protocol;
 
+import "google/protobuf/timestamp.proto";
+
 option csharp_namespace = "Google.Protobuf.Protocol";
 
 enum MsgId {
 	S_CHAT = 0;
 	C_CHAT = 1;
+	S_PING = 2;
+	C_PING = 3;
+	S_SET_NICKNAME = 4;
+	C_SET_NICKNAME = 5;
+	S_CREATE_ROOM = 6;
+	C_CREATE_ROOM = 7;
+	S_DELETE_ROOM = 8;
+	C_DELETE_ROOM = 9;
+	S_ROOM_LIST = 10;
+	C_ROOM_LIST = 11;
+	S_ENTER_ROOM = 12;
+	C_ENTER_ROOM = 13;
+	S_USER_LIST = 14;
+	C_USER_LIST = 15;
+	S_LEAVE_ROOM = 16;
+	C_LEAVE_ROOM = 17;
+	S_ENTER_USER = 20;
+	S_TEST_CHAT = 998;
+	C_TEST_CHAT = 999;
 }
 
 message S_Chat {
 	int32 userId = 1;
 	string msg = 2;
+	google.protobuf.Timestamp timestamp = 3;
 }
-
 message C_Chat {
 	string msg = 1;
+}
+
+message S_Ping {
+}
+message C_Ping {
+}
+
+message S_SetNickname {
+	bool success = 1;
+	string reason = 2;
+	int32 userId = 3;
+}
+message C_SetNickname {
+  string nickname = 1;
+}
+
+message S_CreateRoom {
+  bool success = 1;
+  int32 roomId = 2;
+  string reason = 3;
+}
+message C_CreateRoom {
+  string roomName = 1;
+}
+
+message S_DeleteRoom {
+  bool success = 1;
+  repeated RoomInfo rooms = 2;
+  repeated UserInfo lobbyUserInfos = 3;
+  string reason = 4;
+}
+message C_DeleteRoom {
+}
+
+message S_RoomList {
+  repeated RoomInfo rooms = 1;
+}
+message C_RoomList {
+}
+
+message S_EnterRoom {
+  bool success = 1;
+  RoomInfo roomInfo = 2;
+  string reason = 3;
+}
+message C_EnterRoom {
+  int32 roomId = 1;
+}
+
+message S_UserList {
+  int32 roomId = 1;
+  repeated UserInfo userInfos = 2;
+}
+message C_UserList {
+  int32 roomId = 1;
+}
+
+message S_LeaveRoom {
+  bool success = 1;
+  int32 roomId = 2;
+  int32 userId = 3;
+  string reason = 4;
+}
+message C_LeaveRoom {
+}
+
+message S_EnterUser {
+  int32 roomId = 1;
+  UserInfo userInfo = 2; 
+}
+
+message S_TestChat {
+	S_Chat chat = 1;
+	int64 tickCount = 2;
+}
+message C_TestChat {
+	C_Chat chat = 1;
+	int64 tickCount = 2;
+}
+
+message UserInfo {
+  int32 userId = 1;
+  string nickname = 2;
+}
+message RoomInfo {
+  int32 roomId = 1;
+  string roomName = 2;
+  int32 roomMasterUserId = 3;
+  repeated UserInfo userInfos = 4;
 }
