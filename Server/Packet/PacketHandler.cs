@@ -199,6 +199,7 @@ public static class PacketHandler
 
         // 룸에 있는 모든 유저에게 입장 알림 패킷 전송
         S_EnterRoomAnyUser s_EnterRoomAnyUser = new S_EnterRoomAnyUser();
+        s_EnterRoomAnyUser.RoomId = room.roomInfo.RoomId;
         s_EnterRoomAnyUser.UserInfo = clientSession.UserInfo;
         room.Broadcast(s_EnterRoomAnyUser);
 
@@ -290,7 +291,7 @@ public static class PacketHandler
         // 현재 상태를 로비로 변경
         clientSession.CurrentState = State.Lobby;
         clientSession.Room = null; // 현재 방 정보 초기화
-        RoomManager.Instance.userIds.Add(clientSession.UserInfo.UserId); // 세션을 룸 매니저에 추가
+        RoomManager.Instance.AddUserToLobby(clientSession.UserInfo.UserId); // 세션을 룸 매니저에 추가
 
         // 패킷 생성
         S_EnterLobby s_EnterLobby = new S_EnterLobby();
