@@ -290,6 +290,8 @@ public static class PacketHandler
         // 현재 상태를 로비로 변경
         clientSession.CurrentState = State.Lobby;
         clientSession.Room = null; // 현재 방 정보 초기화
+        RoomManager.Instance.userIds.Add(clientSession.UserInfo.UserId); // 세션을 룸 매니저에 추가
+
         // 패킷 생성
         S_EnterLobby s_EnterLobby = new S_EnterLobby();
         

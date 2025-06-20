@@ -52,8 +52,6 @@ namespace DummyClient
                     break;
             }
 
-            SetNickname();
-
             while (true)
             {
                 Console.WriteLine("\nPress Q to set nickname, W to create room, E to list rooms, Spacebar to send test messages, or Escape to exit.");
