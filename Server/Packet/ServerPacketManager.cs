@@ -33,6 +33,8 @@ public class PacketManager
         _makePacket.Add((ushort)MsgId.CUserList, MakePacket<C_UserList>);
         _handlers.Add((ushort)MsgId.CLeaveRoom, PacketHandler.C_LeaveRoomHandler);
         _makePacket.Add((ushort)MsgId.CLeaveRoom, MakePacket<C_LeaveRoom>);
+        _handlers.Add((ushort)MsgId.CEnterLobby, PacketHandler.C_EnterLobbyHandler);
+        _makePacket.Add((ushort)MsgId.CEnterLobby, MakePacket<C_EnterLobby>);
         _handlers.Add((ushort)MsgId.CTestChat, PacketHandler.C_TestChatHandler);
         _makePacket.Add((ushort)MsgId.CTestChat, MakePacket<C_TestChat>);
 

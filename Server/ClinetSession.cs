@@ -57,6 +57,14 @@ namespace Server
         {
             Console.WriteLine($"OnConnect User_{UserInfo.UserId} {endPoint.ToString()}");
             CurrentState = State.Lobby; // 연결 시 기본 상태를 Lobby로 설정
+            RoomManager.Instance.userIds.Add(UserInfo.UserId); // 세션을 룸 매니저에 추가
+
+            // 유저가 로비에 접속했음을 알리는 패킷 전송
+            S_EnterLobbyAnyUser s_EnterLobbyAnyUser = new S_EnterLobbyAnyUser();
+            s_EnterLobbyAnyUser.UserInfo = UserInfo;
+
+            RoomManager.Instance.BroadcastToLobby(s_EnterLobbyAnyUser);
+
         }
 
         public override void OnDisconnect(EndPoint endPoint)

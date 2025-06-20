@@ -67,8 +67,7 @@ namespace Server
                 }
                 foreach (var userInfo in roomInfo.UserInfos)
                 {
-                    SessionManager.Instance.clientSessions.TryGetValue(userInfo.UserId, out Session session);
-                    var clinetSession = session as ClientSession;
+                    SessionManager.Instance.clientSessions.TryGetValue(userInfo.UserId, out ClientSession clinetSession);
                     clinetSession?.Send(message);
                 }
             }

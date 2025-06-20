@@ -58,7 +58,8 @@ namespace DummyClient
             {
                 Console.WriteLine("\nPress Q to set nickname, W to create room, E to list rooms, Spacebar to send test messages, or Escape to exit.");
                 Console.WriteLine("Press R to delete room, T to enter room, Y to delete current room, U to leave room.");
-                Console.WriteLine("Press A to send chat message, S to check room list, D to check lobby user list, F to check current room user list.");
+                Console.WriteLine("Press A to send chat message, S to check room list, D to check lobby user list, F to check current room user list, G to get user list in current room.");
+                Console.WriteLine("Press H to enter lobby, or Escape to exit.");
                 var readKey = Console.ReadKey();
                 switch (readKey)
                 {
@@ -274,7 +275,19 @@ namespace DummyClient
                             RoomManager roomManager = RoomManager.Instance;
                             if (roomManager.CurrentRoom == null)
                             {
-                                Console.WriteLine("You are not in any room.");
+                                // 로비 유저 리스트 출력
+                                Console.WriteLine("You are not in any room. Here are the users in the lobby:");
+                                if (roomManager.UserInfos.Count == 0)
+                                {
+                                    Console.WriteLine("No users available in the lobby.");
+                                }
+                                else
+                                {
+                                    foreach (var userInfo in roomManager.UserInfos)
+                                    {
+                                        Console.WriteLine($"UserId: {userInfo.Key}, Nickname: {userInfo.Value.Nickname}");
+                                    }
+                                }
                             }
                             else
                             {
@@ -288,9 +301,68 @@ namespace DummyClient
 
                             break;
                         }
+                    case { Key: ConsoleKey.G }:
+                        {
+                            Console.WriteLine("\nG Key Pressed. Sending C_UserList Messages...");
+
+                            var testServerSession = serverSession as TestServerSession;
+                            C_UserList c_UserList = new C_UserList();
+                            c_UserList.RoomId = RoomManager.Instance.CurrentRoom?.RoomId ?? 0;
+
+                            RoomManager roomManager = RoomManager.Instance;
+                            // 테스트 로그
+                            testServerSession.testLog = () =>
+                            {
+                                if (c_UserList.RoomId == 0)
+                                {
+                                    Console.WriteLine("Users in Lobby:");
+                                    foreach (var userInfo in roomManager.UserInfos)
+                                    {
+                                        Console.WriteLine($"UserId: {userInfo.Key}, Nickname: {userInfo.Value.Nickname}");
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"Current Room: {roomManager.CurrentRoom.RoomName}");
+                                    foreach (var user in roomManager.CurrentRoom.UserInfos)
+                                    {
+                                        Console.WriteLine($"UserId: {user.UserId}, Nickname: {user.Nickname}");
+                                    }
+                                }
+                            };
+
+                            testServerSession.Send(c_UserList);
+
+                            break;
+                        }
+                    case { Key: ConsoleKey.H }:
+                        {
+                            Console.WriteLine("\nH Key Pressed. Sending C_EnterLobby Messages...");
+
+                            var testServerSession = serverSession as TestServerSession;
+                            C_EnterLobby c_EnterLobby = new C_EnterLobby();
+
+                            // 테스트 로그
+                            testServerSession.testLog = () =>
+                            {
+
+                            };
+
+                            testServerSession.Send(c_EnterLobby);
+
+                            break;
+                        }
                     case { Key: ConsoleKey.Escape }:
                         {
                             Console.WriteLine("\nEscape Key Pressed. Exiting...");
+                            // 프로그램 종료
+                            foreach (var session in sessions)
+                            {
+                                session.Disconnect();
+                            }
+                            Console.WriteLine("Disconnected from server. Exiting...");
+                            Environment.Exit(0);
+                            // Alternatively, you can use Environment.Exit(0) to exit the application immediately.
                             return;
                         }
                     case { Key: ConsoleKey.Spacebar }:

@@ -28,11 +28,21 @@ namespace Server
             lock (_lock)
             {
                 ClientSession session = new ClientSession(args.AcceptSocket, incSessionId);
-                session.OnConnect(session.Socket.RemoteEndPoint);
                 clientSessions.Add(incSessionId, session);
+                session.OnConnect(session.Socket.RemoteEndPoint);
 
                 incSessionId += 1;
                 return session;
+            }
+        }
+
+        public ClientSession GetClientSession(int userId)
+        {
+            lock (_lock)
+            {
+                if (clientSessions.TryGetValue(userId, out ClientSession session))
+                    return session;
+                return null;
             }
         }
 

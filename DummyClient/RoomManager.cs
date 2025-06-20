@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Google.Protobuf.Collections;
 using Google.Protobuf.Protocol;
 
 public class RoomManager
@@ -32,7 +33,6 @@ public class RoomManager
             if (Rooms.TryGetValue(roomId, out RoomInfo room))
             {
                 room.UserInfos.Add(userInfo);
-                CurrentRoom = room;
                 UserInfos.Remove(userInfo.UserId); // 로비에서 제거
             }
         }
@@ -42,7 +42,7 @@ public class RoomManager
     {
         lock (_lock)
         {
-            UserInfos.Add(userInfo.UserId, userInfo);
+            UserInfos[userInfo.UserId] = userInfo;
         }
     }
 
@@ -56,7 +56,8 @@ public class RoomManager
                 RoomName = TempRoomName,
                 RoomMasterUserId = roomMasterId
             };
-            roomInfo.UserInfos.Add(new UserInfo { UserId = roomMasterId }); // 방장 유저 추가
+            TempRoomName = string.Empty; // 방 이름 초기화
+            roomInfo.UserInfos.Add(UserInfos[roomMasterId]); // 방장 유저 추가
             Rooms.Add(roomInfo.RoomId, roomInfo);
             CurrentRoom = roomInfo; // 현재 방 정보 설정
             UserInfos.Remove(roomMasterId); // 방장 유저는 로비에서 제거
@@ -79,6 +80,15 @@ public class RoomManager
         foreach (var room in roomInfoList)
         {
             Rooms.Add(room.RoomId, room);
+        }
+    }
+
+    public void RefreshUserInfos(RepeatedField<UserInfo> userInfos)
+    {
+        UserInfos.Clear();
+        foreach (var user in userInfos)
+        {
+            UserInfos.Add(user.UserId, user);
         }
     }
 }
