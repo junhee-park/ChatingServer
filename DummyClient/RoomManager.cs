@@ -91,4 +91,14 @@ public class RoomManager
             UserInfos.Add(user.UserId, user);
         }
     }
+    
+    public string ChangeNickname(string nickname, int userId)
+    {
+        lock (_lock)
+        {
+            string oldNickname = UserInfos[userId].Nickname;
+            UserInfos[userId].Nickname = nickname;
+            return oldNickname;
+        }
+    }
 }

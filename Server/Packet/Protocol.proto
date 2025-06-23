@@ -50,6 +50,7 @@ message S_SetNickname {
 	bool success = 1;
 	string reason = 2;
 	int32 userId = 3;
+	string nickname = 4;
 }
 message C_SetNickname {
   string nickname = 1;
@@ -108,6 +109,7 @@ message C_LeaveRoom {
 message S_EnterLobby {
   repeated UserInfo userInfos = 1;
   repeated RoomInfo rooms = 2;
+  int32 userId = 3;
 }
 
 message C_EnterLobby {

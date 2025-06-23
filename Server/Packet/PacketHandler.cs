@@ -76,12 +76,22 @@ public static class PacketHandler
 
         // TODO: 닉네임 중복 체크 로직 추가 필요
 
-        clientSession.UserInfo.Nickname = c_SetNicknamePacket.Nickname;
-        // 패킷 생성
+        // 로비에서만 닉네임 설정 가능
         S_SetNickname s_SetNickname = new S_SetNickname();
-        s_SetNickname.Success = true;
+        if (clientSession.CurrentState != State.Lobby)
+        {
+            Console.WriteLine($"[C_SetNicknameHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
+            s_SetNickname.Success = false;
+            s_SetNickname.Reason = "You must be in the Lobby to set a nickname.";
+            clientSession.Send(s_SetNickname);
+            return;
+        }
 
-        clientSession.Send(s_SetNickname);
+        clientSession.UserInfo.Nickname = c_SetNicknamePacket.Nickname;
+        s_SetNickname.Success = true;
+        s_SetNickname.UserId = clientSession.UserInfo.UserId;
+        s_SetNickname.Nickname = c_SetNicknamePacket.Nickname;
+        RoomManager.Instance.BroadcastToLobby(s_SetNickname);
     }
 
 
@@ -295,7 +305,8 @@ public static class PacketHandler
 
         // 패킷 생성
         S_EnterLobby s_EnterLobby = new S_EnterLobby();
-        
+        s_EnterLobby.UserId = clientSession.UserInfo.UserId;
+
         // 룸 리스트
         foreach (var room in RoomManager.Instance.rooms.Values)
         {

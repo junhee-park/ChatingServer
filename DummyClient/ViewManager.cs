@@ -14,6 +14,8 @@ public interface IViewManager
     void ShowRoomUserList(RepeatedField<UserInfo> userInfos);
     void ShowLobbyUserList(RepeatedField<UserInfo> userInfos);
     void ShowLobbyUserList(Dictionary<int, UserInfo> userInfos);
+    void ShowMessageBox(string text);
+    void ShowChangedNickname(string oldName, string newName);
 }
 
 public class ConsoleViewManager : IViewManager
@@ -64,5 +66,15 @@ public class ConsoleViewManager : IViewManager
         {
             Console.WriteLine($"User ID: {user.UserId}, Nickname: {user.Nickname}");
         }
+    }
+
+    public void ShowMessageBox(string text)
+    {
+        Console.WriteLine(text);
+    }
+
+    public void ShowChangedNickname(string oldName, string newName)
+    {
+        
     }
 }

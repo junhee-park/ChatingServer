@@ -45,16 +45,34 @@ public static class PacketHandler
         testSession?.TestCompareRtt(s_TestChatPacket);
     }
 
-   public static void S_SetNicknameHandler(Session session, IMessage packet)
-   {
+    public static void S_SetNicknameHandler(Session session, IMessage packet)
+    {
         ServerSession serverSession = session as ServerSession;
         S_SetNickname s_SetNicknamePacket = packet as S_SetNickname;
 
-        if (s_SetNicknamePacket.Success)
+        // 닉네임 변경 실패 에러 출력
+        if (s_SetNicknamePacket.Success == false)
         {
-            serverSession.UserInfo.Nickname = serverSession.TempNickname;
-            serverSession.UserInfo.UserId = s_SetNicknamePacket.UserId;
+            Console.WriteLine(s_SetNicknamePacket.Reason);
+            return;
         }
+
+        string oldNickname;
+        if (s_SetNicknamePacket.UserId == serverSession.UserInfo.UserId)
+        {
+            // 현재 세션의 유저 정보 닉네임 변경
+            oldNickname = serverSession.UserInfo.Nickname;
+            serverSession.UserInfo.Nickname = s_SetNicknamePacket.Nickname;
+            serverSession.ViewManager.ShowChangedNickname(oldNickname, s_SetNicknamePacket.Nickname);
+            
+        }
+        else
+        {
+            // 다른 유저의 닉네임 변경
+            oldNickname = RoomManager.Instance.ChangeNickname(s_SetNicknamePacket.Nickname, s_SetNicknamePacket.UserId);
+            serverSession.ViewManager.ShowChangedNickname(oldNickname, s_SetNicknamePacket.Nickname);
+        }
+
     }
 
     public static void S_CreateRoomHandler(Session session, IMessage packet)
@@ -174,6 +192,9 @@ public static class PacketHandler
 
         // 로비에 입장했을 때 유저 리스트 갱신
         RoomManager.Instance.RefreshUserInfos(s_EnterLobby.UserInfos);
+
+        // 본인 유저 인포를 세션에 캐싱
+        serverSession.UserInfo = RoomManager.Instance.UserInfos[s_EnterLobby.UserId];
 
         // 뷰 매니저에 룸 리스트와 유저 리스트를 전달하여 UI 갱신
         serverSession.ViewManager.ShowRoomList(s_EnterLobby.Rooms);

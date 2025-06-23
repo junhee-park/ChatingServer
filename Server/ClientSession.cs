@@ -28,6 +28,7 @@ namespace Server
         public ClientSession(Socket socket, int userId) : base(socket)
         {
             UserInfo.UserId = userId;
+            UserInfo.Nickname = $"User_{userId}"; // 기본 유저 닉네임 설정
         }
 
         public void Send(IMessage message)
