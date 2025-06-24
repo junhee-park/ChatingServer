@@ -57,22 +57,9 @@ public static class PacketHandler
             return;
         }
 
-        string oldNickname;
-        if (s_SetNicknamePacket.UserId == serverSession.UserInfo.UserId)
-        {
-            // 현재 세션의 유저 정보 닉네임 변경
-            oldNickname = serverSession.UserInfo.Nickname;
-            serverSession.UserInfo.Nickname = s_SetNicknamePacket.Nickname;
-            serverSession.ViewManager.ShowChangedNickname(oldNickname, s_SetNicknamePacket.Nickname);
-            
-        }
-        else
-        {
-            // 다른 유저의 닉네임 변경
-            oldNickname = RoomManager.Instance.ChangeNickname(s_SetNicknamePacket.Nickname, s_SetNicknamePacket.UserId);
-            serverSession.ViewManager.ShowChangedNickname(oldNickname, s_SetNicknamePacket.Nickname);
-        }
+        UserInfo userInfo = RoomManager.Instance.UserInfos[s_SetNicknamePacket.UserId];
 
+        serverSession.ViewManager.ShowChangedNickname(userInfo, s_SetNicknamePacket.Nickname);
     }
 
     public static void S_CreateRoomHandler(Session session, IMessage packet)

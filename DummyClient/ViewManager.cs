@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Google.Protobuf.Collections;
 using Google.Protobuf.Protocol;
+using static System.Net.Mime.MediaTypeNames;
 
 public interface IViewManager
 {
@@ -15,7 +16,7 @@ public interface IViewManager
     void ShowLobbyUserList(RepeatedField<UserInfo> userInfos);
     void ShowLobbyUserList(Dictionary<int, UserInfo> userInfos);
     void ShowMessageBox(string text);
-    void ShowChangedNickname(string oldName, string newName);
+    void ShowChangedNickname(UserInfo userInfo, string newName);
 }
 
 public class ConsoleViewManager : IViewManager
@@ -73,8 +74,9 @@ public class ConsoleViewManager : IViewManager
         Console.WriteLine(text);
     }
 
-    public void ShowChangedNickname(string oldName, string newName)
+    public void ShowChangedNickname(UserInfo userInfo, string newName)
     {
-        
+        RoomManager.Instance.UserInfos[userInfo.UserId].Nickname = newName;
+        Console.WriteLine($"User {userInfo.UserId} changed nickname to {newName}");
     }
 }
