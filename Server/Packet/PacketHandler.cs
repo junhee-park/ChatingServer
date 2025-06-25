@@ -116,6 +116,7 @@ public static class PacketHandler
             Console.WriteLine($"[C_CreateRoomHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
             s_CreateRoom.Success = false;
             s_CreateRoom.Reason = "You must be in the Lobby to create a room.";
+            clientSession.Send(s_CreateRoom);
         }
         else
         {
@@ -124,10 +125,12 @@ public static class PacketHandler
             RoomInfo roomInfo = room.roomInfo;
             s_CreateRoom.RoomInfo = roomInfo;
             s_CreateRoom.Success = true;
+            RoomManager.Instance.BroadcastToLobby(s_CreateRoom);
+
+            RoomManager.Instance.userIds.Remove(userId); // 로비에서 유저 제거
             clientSession.CurrentState = State.Room;
             clientSession.Room = room; // 현재 방 정보 설정
         }
-        RoomManager.Instance.BroadcastToLobby(s_CreateRoom);
     }
 
     public static void C_DeleteRoomHandler(Session session, IMessage packet)
@@ -215,6 +218,7 @@ public static class PacketHandler
         room.Broadcast(s_EnterRoomAnyUser);
 
         // 룸에 유저 추가
+        RoomManager.Instance.userIds.Remove(userId); // 로비에서 유저 제거
         room.AddUser(clientSession);
         s_EnterRoom.Success = true;
         s_EnterRoom.RoomInfo = room.roomInfo;

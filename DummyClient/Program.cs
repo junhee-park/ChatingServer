@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using Google.Protobuf;
@@ -78,7 +79,7 @@ namespace DummyClient
                             // 테스트 로그
                             testServerSession.testLog = () =>
                             {
-                                Console.WriteLine($"C_CreateRoom Send Complete!");
+
                             };
 
                             testServerSession.Send(c_CreateRoom);
@@ -94,8 +95,8 @@ namespace DummyClient
                             // 테스트 로그
                             testServerSession.testLog = () =>
                             {
-                                Console.WriteLine($"C_RoomList Send Complete!");
-                                foreach( var room in RoomManager.Instance.Rooms )
+                                // 룸 리스트 표시
+                                foreach (var room in RoomManager.Instance.Rooms)
                                 {
                                     Console.WriteLine($"[{room.Key}] {room.Value.RoomName}");
                                 }
@@ -114,10 +115,7 @@ namespace DummyClient
                             // 테스트 로그
                             testServerSession.testLog = () =>
                             {
-                                foreach(var room in RoomManager.Instance.Rooms)
-                                {
-                                    Console.WriteLine($"[{room.Key}] {room.Value.RoomName}");
-                                }
+
                             };
 
                             testServerSession.Send(c_DeleteRoom);
@@ -145,13 +143,7 @@ namespace DummyClient
                             // 테스트 로그
                             testServerSession.testLog = () =>
                             {
-                                if (RoomManager.Instance.CurrentRoom == null)
-                                    return;
-                                Console.WriteLine($"[{RoomManager.Instance.CurrentRoom.RoomName}] {RoomManager.Instance.CurrentRoom.RoomName} 입장");
-                                foreach (var user in RoomManager.Instance.CurrentRoom.UserInfos)
-                                {
-                                    Console.WriteLine($"UserId: {user.UserId}, Nickname: {user.Nickname}");
-                                }
+
                             };
 
                             testServerSession.Send(c_EnterRoom);
@@ -248,7 +240,7 @@ namespace DummyClient
                         }
                     case { Key: ConsoleKey.D }:
                         {
-                            Console.WriteLine("\nS Key Pressed. 패킷을 보내지 않고 현재 로비 유저 리스트 확인");
+                            Console.WriteLine("\nD Key Pressed. 패킷을 보내지 않고 현재 로비 유저 리스트 확인");
 
                             RoomManager roomManager = RoomManager.Instance;
                             if (roomManager.UserInfos.Count == 0)
@@ -274,18 +266,7 @@ namespace DummyClient
                             if (roomManager.CurrentRoom == null)
                             {
                                 // 로비 유저 리스트 출력
-                                Console.WriteLine("You are not in any room. Here are the users in the lobby:");
-                                if (roomManager.UserInfos.Count == 0)
-                                {
-                                    Console.WriteLine("No users available in the lobby.");
-                                }
-                                else
-                                {
-                                    foreach (var userInfo in roomManager.CurrentRoom?.UserInfos)
-                                    {
-                                        Console.WriteLine($"UserId: {userInfo.UserId}, Nickname: {userInfo.Nickname}");
-                                    }
-                                }
+                                Console.WriteLine("You are not in any room. Here are the users in the lobby:");                                
                             }
                             else
                             {
@@ -507,6 +488,12 @@ namespace DummyClient
         public override void OnRecvPacket(ArraySegment<byte> data)
         {
             PacketManager.Instance.InvokePacketHandler(this, data);
+
+            ushort size = BitConverter.ToUInt16(data.Array, 0);
+            ushort packetId = BitConverter.ToUInt16(data.Array, 2);
+            MsgId msgId = (MsgId)packetId;
+            Console.WriteLine($"[{msgId.ToString()}] size: {size}");
+
             testLog?.Invoke();
         }
 

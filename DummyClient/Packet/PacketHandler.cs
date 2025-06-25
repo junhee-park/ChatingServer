@@ -132,6 +132,8 @@ public static class PacketHandler
             Console.WriteLine(s_EnterRoomPacket.Reason);
             return;
         }
+
+        RoomManager.Instance.CurrentRoom = s_EnterRoomPacket.RoomInfo; // 현재 방 정보 설정
         RoomManager.Instance.AddUserToRoom(s_EnterRoomPacket.RoomInfo.RoomId, serverSession.UserInfo);
         serverSession.ViewManager.ShowRoomScreen();
         serverSession.ViewManager.ShowRoomUserList(RoomManager.Instance.Rooms[s_EnterRoomPacket.RoomInfo.RoomId].UserInfos);
