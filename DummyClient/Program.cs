@@ -281,9 +281,9 @@ namespace DummyClient
                                 }
                                 else
                                 {
-                                    foreach (var userInfo in roomManager.UserInfos)
+                                    foreach (var userInfo in roomManager.CurrentRoom?.UserInfos)
                                     {
-                                        Console.WriteLine($"UserId: {userInfo.Key}, Nickname: {userInfo.Value.Nickname}");
+                                        Console.WriteLine($"UserId: {userInfo.UserId}, Nickname: {userInfo.Nickname}");
                                     }
                                 }
                             }

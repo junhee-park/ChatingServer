@@ -46,21 +46,11 @@ public class RoomManager
         }
     }
 
-    public void CreateRoom(int roomId, int roomMasterId)
+    public void CreateRoom(RoomInfo roomInfo)
     {
         lock (_lock)
         {
-            RoomInfo roomInfo = new RoomInfo
-            {
-                RoomId = roomId,
-                RoomName = TempRoomName,
-                RoomMasterUserId = roomMasterId
-            };
-            TempRoomName = string.Empty; // 방 이름 초기화
-            roomInfo.UserInfos.Add(UserInfos[roomMasterId]); // 방장 유저 추가
             Rooms.Add(roomInfo.RoomId, roomInfo);
-            CurrentRoom = roomInfo; // 현재 방 정보 설정
-            UserInfos.Remove(roomMasterId); // 방장 유저는 로비에서 제거
         }
     }
 

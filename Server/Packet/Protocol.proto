@@ -58,8 +58,8 @@ message C_SetNickname {
 
 message S_CreateRoom {
   bool success = 1;
-  int32 roomId = 2;
-  string reason = 3;
+  string reason = 2;
+  RoomInfo roomInfo = 3;
 }
 message C_CreateRoom {
   string roomName = 1;

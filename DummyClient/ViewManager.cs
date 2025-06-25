@@ -15,8 +15,12 @@ public interface IViewManager
     void ShowRoomUserList(RepeatedField<UserInfo> userInfos);
     void ShowLobbyUserList(RepeatedField<UserInfo> userInfos);
     void ShowLobbyUserList(Dictionary<int, UserInfo> userInfos);
-    void ShowMessageBox(string text);
     void ShowChangedNickname(UserInfo userInfo, string newName);
+    void ShowLobbyScreen();
+    void ShowRoomScreen();
+    void ShowAddedRoom(RoomInfo roomInfo);
+    void ShowAddedUser(int roomId, UserInfo userInfo);
+    void ShowRemovedUser(int roomId, UserInfo userInfo);
 }
 
 public class ConsoleViewManager : IViewManager
@@ -45,6 +49,7 @@ public class ConsoleViewManager : IViewManager
 
     public void ShowRoomUserList(RepeatedField<UserInfo> userInfos)
     {
+        Console.WriteLine("ShowRoomUserList");
         foreach (var user in userInfos)
         {
             Console.WriteLine($"User ID: {user.UserId}, Nickname: {user.Nickname}");
@@ -54,6 +59,7 @@ public class ConsoleViewManager : IViewManager
 
     public void ShowLobbyUserList(RepeatedField<UserInfo> userInfos)
     {
+        Console.WriteLine("ShowLobbyUserList");
         foreach (var user in userInfos)
         {
             Console.WriteLine($"User ID: {user.UserId}, Nickname: {user.Nickname}");
@@ -63,20 +69,46 @@ public class ConsoleViewManager : IViewManager
 
     public void ShowLobbyUserList(Dictionary<int, UserInfo> userInfos)
     {
+        Console.WriteLine("ShowLobbyUserList");
         foreach (var user in userInfos.Values)
         {
             Console.WriteLine($"User ID: {user.UserId}, Nickname: {user.Nickname}");
         }
     }
 
-    public void ShowMessageBox(string text)
-    {
-        Console.WriteLine(text);
-    }
-
     public void ShowChangedNickname(UserInfo userInfo, string newName)
     {
         RoomManager.Instance.UserInfos[userInfo.UserId].Nickname = newName;
         Console.WriteLine($"User {userInfo.UserId} changed nickname to {newName}");
+    }
+
+    public void ShowLobbyScreen()
+    {
+
+    }
+
+    public void ShowRoomScreen()
+    {
+        
+    }
+
+    public void ShowAddedRoom(RoomInfo roomInfo)
+    {
+        // 추가된 방 정보를 콘솔에 출력
+        Console.WriteLine($"Added Room ID: {roomInfo.RoomId}, Name: {roomInfo.RoomName}, Master: {roomInfo.RoomMasterUserId}");
+
+    }
+
+    public void ShowAddedUser(int roomId, UserInfo userInfo)
+    {
+        // 특정 방에 유저가 추가되었다고 콘솔창에 표시
+        Console.WriteLine($"Added Room ID: {roomId}, Nickname: {userInfo.Nickname}, UserId: {userInfo.UserId}");
+
+    }
+
+    public void ShowRemovedUser(int roomId, UserInfo userInfo)
+    {
+        // 특정 방에 유저가 떠났다고 콘솔창에 표시
+        Console.WriteLine($"Removed Room ID: {roomId}, Nickname: {userInfo.Nickname}, UserId: {userInfo.UserId}");
     }
 }

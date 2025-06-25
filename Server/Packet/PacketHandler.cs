@@ -121,12 +121,13 @@ public static class PacketHandler
         {
             Room room = RoomManager.Instance.CreateRoom(c_CreateRoomPacket.RoomName, userId);
             room.AddUser(clientSession);
-            s_CreateRoom.RoomId = room.roomInfo.RoomId;
+            RoomInfo roomInfo = room.roomInfo;
+            s_CreateRoom.RoomInfo = roomInfo;
             s_CreateRoom.Success = true;
             clientSession.CurrentState = State.Room;
             clientSession.Room = room; // 현재 방 정보 설정
         }
-        clientSession.Send(s_CreateRoom);
+        RoomManager.Instance.BroadcastToLobby(s_CreateRoom);
     }
 
     public static void C_DeleteRoomHandler(Session session, IMessage packet)

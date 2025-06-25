@@ -74,7 +74,27 @@ public static class PacketHandler
         }
 
         // 서버에서 할당한 방 아이디와 임시 방 이름, 방생성 요청한 유저 아이디를 현재 방 인포에 추가
-        RoomManager.Instance.CreateRoom(s_CreateRoomPacket.RoomId, serverSession.UserInfo.UserId);
+        RoomManager.Instance.CreateRoom(s_CreateRoomPacket.RoomInfo);
+
+        // 로비 리스트에서 방을 생성한 유저 제거
+        var roomMasterUser = RoomManager.Instance.UserInfos[s_CreateRoomPacket.RoomInfo.RoomMasterUserId];
+        RoomManager.Instance.UserInfos.Remove(s_CreateRoomPacket.RoomInfo.RoomMasterUserId);
+
+        // 방 생성자는 방에 입장한 것으로 간주하고 방 정보와 유저 리스트를 뷰 매니저에 전달하여 UI 갱신
+        if (serverSession.UserInfo.UserId == s_CreateRoomPacket.RoomInfo.RoomMasterUserId)
+        {
+            RoomManager.Instance.CurrentRoom = s_CreateRoomPacket.RoomInfo; // 현재 방 정보 설정
+            // 방으로 스크린을 변경하고 방 유저 리스트를 보여줌
+            serverSession.ViewManager.ShowRoomScreen();
+            serverSession.ViewManager.ShowRoomUserList(s_CreateRoomPacket.RoomInfo.UserInfos);
+            serverSession.ViewManager.ShowText($"방 생성 성공: {s_CreateRoomPacket.RoomInfo.RoomName} (ID: {s_CreateRoomPacket.RoomInfo.RoomId})");
+        }
+        else
+        {
+            // 방 리스트에 방을 추가하고 방 리스트를 보여줌
+            serverSession.ViewManager.ShowAddedRoom(s_CreateRoomPacket.RoomInfo);
+            serverSession.ViewManager.ShowRemovedUser(0, roomMasterUser);
+        }
     }
 
     public static void S_DeleteRoomHandler(Session session, IMessage packet)
@@ -113,11 +133,12 @@ public static class PacketHandler
             return;
         }
         RoomManager.Instance.AddUserToRoom(s_EnterRoomPacket.RoomInfo.RoomId, serverSession.UserInfo);
-
+        serverSession.ViewManager.ShowRoomScreen();
+        serverSession.ViewManager.ShowRoomUserList(RoomManager.Instance.Rooms[s_EnterRoomPacket.RoomInfo.RoomId].UserInfos);
     }
 
     /// <summary>
-    /// 방 또는 로비에 있을 경우 누군가 어떤 방 입장했을 때 호출되는 핸들러.
+    /// 같은 방 또는 로비에 있을 경우 누군가 방 입장했을 때 호출되는 핸들러.
     /// </summary>
     /// <param name="session"></param>
     /// <param name="packet"></param>
@@ -129,7 +150,7 @@ public static class PacketHandler
         var roomManager = RoomManager.Instance;
 
         roomManager.AddUserToRoom(s_EnterRoomAnyUserPacket.RoomId, serverSession.UserInfo);
-        serverSession.ViewManager.ShowRoomUserList(roomManager.Rooms[s_EnterRoomAnyUserPacket.RoomId].UserInfos);
+        serverSession.ViewManager.ShowAddedUser(s_EnterRoomAnyUserPacket.RoomId, s_EnterRoomAnyUserPacket.UserInfo);
     }
 
     /// <summary>
@@ -185,7 +206,7 @@ public static class PacketHandler
 
         // 뷰 매니저에 룸 리스트와 유저 리스트를 전달하여 UI 갱신
         serverSession.ViewManager.ShowRoomList(s_EnterLobby.Rooms);
-        serverSession.ViewManager.ShowRoomUserList(s_EnterLobby.UserInfos);
+        serverSession.ViewManager.ShowLobbyUserList(s_EnterLobby.UserInfos);
 
     }
 }
