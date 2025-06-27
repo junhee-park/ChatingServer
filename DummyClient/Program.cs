@@ -184,7 +184,7 @@ namespace DummyClient
                             {
                                 if (RoomManager.Instance.Rooms.ContainsValue(currentRoom))
                                 {
-                                    foreach(var user in currentRoom.UserInfos)
+                                    foreach(var user in currentRoom.UserInfos.Values)
                                     {
                                         if (user.UserId == testServerSession.UserInfo.UserId)
                                         {
@@ -272,9 +272,9 @@ namespace DummyClient
                             {
                                 Console.WriteLine($"Current Room: {roomManager.CurrentRoom.RoomName}");
                                 Console.WriteLine("Users in Current Room:");
-                                foreach (var user in roomManager.CurrentRoom.UserInfos)
+                                foreach (var user in roomManager.CurrentRoom.UserInfos.Values)
                                 {
-                                    Console.WriteLine($"UserId: {user.UserId}, Nickname: {user.Nickname}");
+                                    Console.WriteLine($"UserId: {user}, Nickname: {user.Nickname}");
                                 }
                             }
 
@@ -303,7 +303,7 @@ namespace DummyClient
                                 else
                                 {
                                     Console.WriteLine($"Current Room: {roomManager.CurrentRoom.RoomName}");
-                                    foreach (var user in roomManager.CurrentRoom.UserInfos)
+                                    foreach (var user in roomManager.CurrentRoom.UserInfos.Values)
                                     {
                                         Console.WriteLine($"UserId: {user.UserId}, Nickname: {user.Nickname}");
                                     }
@@ -487,12 +487,12 @@ namespace DummyClient
 
         public override void OnRecvPacket(ArraySegment<byte> data)
         {
-            PacketManager.Instance.InvokePacketHandler(this, data);
-
             ushort size = BitConverter.ToUInt16(data.Array, 0);
             ushort packetId = BitConverter.ToUInt16(data.Array, 2);
             MsgId msgId = (MsgId)packetId;
             Console.WriteLine($"[{msgId.ToString()}] size: {size}");
+
+            PacketManager.Instance.InvokePacketHandler(this, data);
 
             testLog?.Invoke();
         }

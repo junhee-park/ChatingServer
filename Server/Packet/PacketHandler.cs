@@ -258,7 +258,7 @@ public static class PacketHandler
             if (clientSession.CurrentState == State.Room && clientSession.Room != null)
             {
                 s_UserList.RoomId = clientSession.Room.roomInfo.RoomId; // 현재 방의 ID 설정
-                foreach (UserInfo userInfo in clientSession.Room.roomInfo.UserInfos)
+                foreach (UserInfo userInfo in clientSession.Room.roomInfo.UserInfos.Values)
                 {
                     s_UserList.UserInfos.Add(userInfo);
                 }

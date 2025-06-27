@@ -32,7 +32,7 @@ public class RoomManager
         {
             if (Rooms.TryGetValue(roomId, out RoomInfo room))
             {
-                room.UserInfos.Add(userInfo);
+                room.UserInfos.Add(userInfo.UserId, userInfo);
                 UserInfos.Remove(userInfo.UserId); // 로비에서 제거
             }
         }
@@ -59,7 +59,7 @@ public class RoomManager
         lock (_lock)
         {
             Rooms.TryGetValue(CurrentRoom.RoomId, out RoomInfo roomInfo);
-            roomInfo.UserInfos.Remove(userInfo);
+            roomInfo.UserInfos.Remove(userInfo.UserId);
             UserInfos.Add(userInfo.UserId, userInfo); // 유저를 로비로 이동
         }
     }

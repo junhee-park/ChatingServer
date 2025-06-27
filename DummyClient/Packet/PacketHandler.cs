@@ -151,7 +151,7 @@ public static class PacketHandler
 
         var roomManager = RoomManager.Instance;
 
-        roomManager.AddUserToRoom(s_EnterRoomAnyUserPacket.RoomId, serverSession.UserInfo);
+        roomManager.AddUserToRoom(s_EnterRoomAnyUserPacket.RoomId, s_EnterRoomAnyUserPacket.UserInfo);
         serverSession.ViewManager.ShowAddedUser(s_EnterRoomAnyUserPacket.RoomId, s_EnterRoomAnyUserPacket.UserInfo);
     }
 

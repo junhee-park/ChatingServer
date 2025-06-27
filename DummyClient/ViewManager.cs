@@ -17,7 +17,7 @@ public class ConsoleViewManager : IViewManager
         foreach (var room in roomInfos)
         {
             Console.WriteLine($"Room ID: {room.RoomId}, Name: {room.RoomName}, Master: {room.RoomMasterUserId}");
-            foreach (var user in room.UserInfos)
+            foreach (var user in room.UserInfos.Values)
             {
                 Console.WriteLine($" - User ID: {user.UserId}, Nickname: {user.Nickname}");
             }
@@ -34,10 +34,10 @@ public class ConsoleViewManager : IViewManager
         throw new NotImplementedException();
     }
 
-    public void ShowRoomUserList(RepeatedField<UserInfo> userInfos)
+    public void ShowRoomUserList(MapField<int, UserInfo> userInfos)
     {
         Console.WriteLine(MethodBase.GetCurrentMethod().Name);
-        foreach (var user in userInfos)
+        foreach (var user in userInfos.Values)
         {
             Console.WriteLine($"User ID: {user.UserId}, Nickname: {user.Nickname}");
 

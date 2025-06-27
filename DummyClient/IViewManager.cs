@@ -6,7 +6,7 @@ public interface IViewManager
     void ShowText(string text);
     void ShowText(S_Chat s_Chat);
     void ShowRoomList(RepeatedField<RoomInfo> roomInfos);
-    void ShowRoomUserList(RepeatedField<UserInfo> userInfos);
+    void ShowRoomUserList(MapField<int, UserInfo> userInfos);
     void ShowLobbyUserList(RepeatedField<UserInfo> userInfos);
     void ShowLobbyUserList(Dictionary<int, UserInfo> userInfos);
     void ShowChangedNickname(UserInfo userInfo, string newName);

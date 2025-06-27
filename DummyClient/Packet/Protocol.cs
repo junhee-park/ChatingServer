@@ -54,20 +54,22 @@ namespace Google.Protobuf.Protocol {
             "Q2hhdBIeCgRjaGF0GAEgASgLMhAuUHJvdG9jb2wuU19DaGF0EhEKCXRpY2tD",
             "b3VudBgCIAEoAyI/CgpDX1Rlc3RDaGF0Eh4KBGNoYXQYASABKAsyEC5Qcm90",
             "b2NvbC5DX0NoYXQSEQoJdGlja0NvdW50GAIgASgDIiwKCFVzZXJJbmZvEg4K",
-            "BnVzZXJJZBgBIAEoBRIQCghuaWNrbmFtZRgCIAEoCSJtCghSb29tSW5mbxIO",
-            "CgZyb29tSWQYASABKAUSEAoIcm9vbU5hbWUYAiABKAkSGAoQcm9vbU1hc3Rl",
-            "clVzZXJJZBgDIAEoBRIlCgl1c2VySW5mb3MYBCADKAsyEi5Qcm90b2NvbC5V",
-            "c2VySW5mbyq4AwoFTXNnSWQSCgoGU19DSEFUEAASCgoGQ19DSEFUEAESCgoG",
-            "U19QSU5HEAISCgoGQ19QSU5HEAMSEgoOU19TRVRfTklDS05BTUUQBBISCg5D",
-            "X1NFVF9OSUNLTkFNRRAFEhEKDVNfQ1JFQVRFX1JPT00QBhIRCg1DX0NSRUFU",
-            "RV9ST09NEAcSEQoNU19ERUxFVEVfUk9PTRAIEhEKDUNfREVMRVRFX1JPT00Q",
-            "CRIPCgtTX1JPT01fTElTVBAKEg8KC0NfUk9PTV9MSVNUEAsSEAoMU19FTlRF",
-            "Ul9ST09NEAwSEAoMQ19FTlRFUl9ST09NEA0SDwoLU19VU0VSX0xJU1QQDhIP",
-            "CgtDX1VTRVJfTElTVBAPEhAKDFNfTEVBVkVfUk9PTRAQEhAKDENfTEVBVkVf",
-            "Uk9PTRAREhEKDVNfRU5URVJfTE9CQlkQEhIRCg1DX0VOVEVSX0xPQkJZEBMS",
-            "GQoVU19FTlRFUl9ST09NX0FOWV9VU0VSEBQSGgoWU19FTlRFUl9MT0JCWV9B",
-            "TllfVVNFUhAVEhAKC1NfVEVTVF9DSEFUEOYHEhAKC0NfVEVTVF9DSEFUEOcH",
-            "QhuqAhhHb29nbGUuUHJvdG9idWYuUHJvdG9jb2xiBnByb3RvMw=="));
+            "BnVzZXJJZBgBIAEoBRIQCghuaWNrbmFtZRgCIAEoCSLCAQoIUm9vbUluZm8S",
+            "DgoGcm9vbUlkGAEgASgFEhAKCHJvb21OYW1lGAIgASgJEhgKEHJvb21NYXN0",
+            "ZXJVc2VySWQYAyABKAUSNAoJdXNlckluZm9zGAQgAygLMiEuUHJvdG9jb2wu",
+            "Um9vbUluZm8uVXNlckluZm9zRW50cnkaRAoOVXNlckluZm9zRW50cnkSCwoD",
+            "a2V5GAEgASgFEiEKBXZhbHVlGAIgASgLMhIuUHJvdG9jb2wuVXNlckluZm86",
+            "AjgBKrgDCgVNc2dJZBIKCgZTX0NIQVQQABIKCgZDX0NIQVQQARIKCgZTX1BJ",
+            "TkcQAhIKCgZDX1BJTkcQAxISCg5TX1NFVF9OSUNLTkFNRRAEEhIKDkNfU0VU",
+            "X05JQ0tOQU1FEAUSEQoNU19DUkVBVEVfUk9PTRAGEhEKDUNfQ1JFQVRFX1JP",
+            "T00QBxIRCg1TX0RFTEVURV9ST09NEAgSEQoNQ19ERUxFVEVfUk9PTRAJEg8K",
+            "C1NfUk9PTV9MSVNUEAoSDwoLQ19ST09NX0xJU1QQCxIQCgxTX0VOVEVSX1JP",
+            "T00QDBIQCgxDX0VOVEVSX1JPT00QDRIPCgtTX1VTRVJfTElTVBAOEg8KC0Nf",
+            "VVNFUl9MSVNUEA8SEAoMU19MRUFWRV9ST09NEBASEAoMQ19MRUFWRV9ST09N",
+            "EBESEQoNU19FTlRFUl9MT0JCWRASEhEKDUNfRU5URVJfTE9CQlkQExIZChVT",
+            "X0VOVEVSX1JPT01fQU5ZX1VTRVIQFBIaChZTX0VOVEVSX0xPQkJZX0FOWV9V",
+            "U0VSEBUSEAoLU19URVNUX0NIQVQQ5gcSEAoLQ19URVNUX0NIQVQQ5wdCG6oC",
+            "GEdvb2dsZS5Qcm90b2J1Zi5Qcm90b2NvbGIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.Protocol.MsgId), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -96,7 +98,7 @@ namespace Google.Protobuf.Protocol {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.S_TestChat), global::Google.Protobuf.Protocol.S_TestChat.Parser, new[]{ "Chat", "TickCount" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.C_TestChat), global::Google.Protobuf.Protocol.C_TestChat.Parser, new[]{ "Chat", "TickCount" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.UserInfo), global::Google.Protobuf.Protocol.UserInfo.Parser, new[]{ "UserId", "Nickname" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.RoomInfo), global::Google.Protobuf.Protocol.RoomInfo.Parser, new[]{ "RoomId", "RoomName", "RoomMasterUserId", "UserInfos" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.RoomInfo), global::Google.Protobuf.Protocol.RoomInfo.Parser, new[]{ "RoomId", "RoomName", "RoomMasterUserId", "UserInfos" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, })
           }));
     }
     #endregion
@@ -5758,12 +5760,12 @@ namespace Google.Protobuf.Protocol {
 
     /// <summary>Field number for the "userInfos" field.</summary>
     public const int UserInfosFieldNumber = 4;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.Protocol.UserInfo> _repeated_userInfos_codec
-        = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.Protocol.UserInfo.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.Protocol.UserInfo> userInfos_ = new pbc::RepeatedField<global::Google.Protobuf.Protocol.UserInfo>();
+    private static readonly pbc::MapField<int, global::Google.Protobuf.Protocol.UserInfo>.Codec _map_userInfos_codec
+        = new pbc::MapField<int, global::Google.Protobuf.Protocol.UserInfo>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.Protocol.UserInfo.Parser), 34);
+    private readonly pbc::MapField<int, global::Google.Protobuf.Protocol.UserInfo> userInfos_ = new pbc::MapField<int, global::Google.Protobuf.Protocol.UserInfo>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public pbc::RepeatedField<global::Google.Protobuf.Protocol.UserInfo> UserInfos {
+    public pbc::MapField<int, global::Google.Protobuf.Protocol.UserInfo> UserInfos {
       get { return userInfos_; }
     }
 
@@ -5785,7 +5787,7 @@ namespace Google.Protobuf.Protocol {
       if (RoomId != other.RoomId) return false;
       if (RoomName != other.RoomName) return false;
       if (RoomMasterUserId != other.RoomMasterUserId) return false;
-      if(!userInfos_.Equals(other.userInfos_)) return false;
+      if (!UserInfos.Equals(other.UserInfos)) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -5796,7 +5798,7 @@ namespace Google.Protobuf.Protocol {
       if (RoomId != 0) hash ^= RoomId.GetHashCode();
       if (RoomName.Length != 0) hash ^= RoomName.GetHashCode();
       if (RoomMasterUserId != 0) hash ^= RoomMasterUserId.GetHashCode();
-      hash ^= userInfos_.GetHashCode();
+      hash ^= UserInfos.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -5827,7 +5829,7 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(24);
         output.WriteInt32(RoomMasterUserId);
       }
-      userInfos_.WriteTo(output, _repeated_userInfos_codec);
+      userInfos_.WriteTo(output, _map_userInfos_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -5850,7 +5852,7 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(24);
         output.WriteInt32(RoomMasterUserId);
       }
-      userInfos_.WriteTo(ref output, _repeated_userInfos_codec);
+      userInfos_.WriteTo(ref output, _map_userInfos_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -5870,7 +5872,7 @@ namespace Google.Protobuf.Protocol {
       if (RoomMasterUserId != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(RoomMasterUserId);
       }
-      size += userInfos_.CalculateSize(_repeated_userInfos_codec);
+      size += userInfos_.CalculateSize(_map_userInfos_codec);
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -5892,7 +5894,7 @@ namespace Google.Protobuf.Protocol {
       if (other.RoomMasterUserId != 0) {
         RoomMasterUserId = other.RoomMasterUserId;
       }
-      userInfos_.Add(other.userInfos_);
+      userInfos_.MergeFrom(other.userInfos_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -5925,7 +5927,7 @@ namespace Google.Protobuf.Protocol {
             break;
           }
           case 34: {
-            userInfos_.AddEntriesFrom(input, _repeated_userInfos_codec);
+            userInfos_.AddEntriesFrom(input, _map_userInfos_codec);
             break;
           }
         }
@@ -5960,7 +5962,7 @@ namespace Google.Protobuf.Protocol {
             break;
           }
           case 34: {
-            userInfos_.AddEntriesFrom(ref input, _repeated_userInfos_codec);
+            userInfos_.AddEntriesFrom(ref input, _map_userInfos_codec);
             break;
           }
         }

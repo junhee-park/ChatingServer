@@ -26,12 +26,12 @@ namespace Server
         {
             lock (_lock)
             {
-                if (roomInfo.UserInfos.Contains(session.UserInfo))
+                if (roomInfo.UserInfos.ContainsKey(session.UserInfo.UserId))
                 {
                     Console.WriteLine($"User {session.UserInfo.UserId} is already in the room {roomInfo.RoomId}.");
                     return; // 이미 방에 있는 유저는 추가하지 않음
                 }
-                roomInfo.UserInfos.Add(session.UserInfo);
+                roomInfo.UserInfos.Add(session.UserInfo.UserId, session.UserInfo);
             }
         }
 
@@ -40,11 +40,11 @@ namespace Server
             lock (_lock)
             {
                 bool result = false;
-                foreach (var userInfo in roomInfo.UserInfos)
+                foreach (var userInfo in roomInfo.UserInfos.Values)
                 {
                     if (userInfo.UserId == userId)
                     {
-                        result = roomInfo.UserInfos.Remove(userInfo);
+                        result = roomInfo.UserInfos.Remove(userInfo.UserId);
                         break;
                     }
                 }
@@ -65,7 +65,7 @@ namespace Server
                     Console.WriteLine($"No users in room {roomInfo.RoomId} to broadcast message.");
                     return; // 방에 유저가 없으면 브로드캐스트하지 않음
                 }
-                foreach (var userInfo in roomInfo.UserInfos)
+                foreach (var userInfo in roomInfo.UserInfos.Values)
                 {
                     SessionManager.Instance.clientSessions.TryGetValue(userInfo.UserId, out ClientSession clinetSession);
                     clinetSession?.Send(message);

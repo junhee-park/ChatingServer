@@ -141,5 +141,5 @@ message RoomInfo {
   int32 roomId = 1;
   string roomName = 2;
   int32 roomMasterUserId = 3;
-  repeated UserInfo userInfos = 4;
+  map<int32, UserInfo> userInfos = 4;
 }
