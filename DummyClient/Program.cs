@@ -161,7 +161,7 @@ namespace DummyClient
                             // 테스트 로그
                             testServerSession.testLog = () =>
                             {
-                                if (!RoomManager.Instance.Rooms.ContainsValue(currentRoom))
+                                if (!RoomManager.Instance.Rooms.ContainsKey(currentRoom.RoomId))
                                 {
                                     Console.WriteLine($"{currentRoom.RoomName} 방 삭제 완료");
                                 }
@@ -182,7 +182,7 @@ namespace DummyClient
                             // 테스트 로그
                             testServerSession.testLog = () =>
                             {
-                                if (RoomManager.Instance.Rooms.ContainsValue(currentRoom))
+                                if (RoomManager.Instance.Rooms.ContainsKey(currentRoom.RoomId))
                                 {
                                     foreach(var user in currentRoom.UserInfos.Values)
                                     {

@@ -28,6 +28,7 @@ enum MsgId {
 	C_ENTER_LOBBY = 19;
 	S_ENTER_ROOM_ANY_USER = 20;
 	S_ENTER_LOBBY_ANY_USER = 21;
+	S_LEAVE_ROOM_ANY_USER = 22;
 	S_TEST_CHAT = 998;
 	C_TEST_CHAT = 999;
 }
@@ -67,15 +68,15 @@ message C_CreateRoom {
 
 message S_DeleteRoom {
   bool success = 1;
-  repeated RoomInfo rooms = 2;
-  repeated UserInfo lobbyUserInfos = 3;
+  map<int32, RoomInfo> rooms = 2;
+  map<int32, UserInfo> lobbyUserInfos = 3;
   string reason = 4;
 }
 message C_DeleteRoom {
 }
 
 message S_RoomList {
-  repeated RoomInfo rooms = 1;
+  map<int32, RoomInfo> rooms = 1;
 }
 message C_RoomList {
 }
@@ -91,24 +92,22 @@ message C_EnterRoom {
 
 message S_UserList {
   int32 roomId = 1;
-  repeated UserInfo userInfos = 2;
+  map<int32, UserInfo> userInfos = 2;
 }
 message C_UserList {
   int32 roomId = 1;
 }
 
 message S_LeaveRoom {
-  bool success = 1;
-  int32 roomId = 2;
-  int32 userId = 3;
-  string reason = 4;
+  map<int32, UserInfo> userInfos = 1;
+  map<int32, RoomInfo> rooms = 2;
 }
 message C_LeaveRoom {
 }
 
 message S_EnterLobby {
-  repeated UserInfo userInfos = 1;
-  repeated RoomInfo rooms = 2;
+  map<int32, UserInfo> userInfos = 1;
+  map<int32, RoomInfo> rooms = 2;
   int32 userId = 3;
 }
 
@@ -122,6 +121,11 @@ message S_EnterRoomAnyUser {
 
 message S_EnterLobbyAnyUser {
   UserInfo userInfo = 1; 
+}
+
+message S_LeaveRoomAnyUser {
+  int32 roomId = 1;
+  UserInfo userInfo = 2; 
 }
 
 message S_TestChat {

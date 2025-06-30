@@ -23,7 +23,24 @@ namespace Server
 
             while (true)
             {
-                
+                // 서버가 실행 중일 때 콘솔에서 입력을 받기 위한 부분
+                Console.WriteLine("Press 'Q' to display all users' current locations or any other key to continue...");
+                var key = Console.ReadKey();
+                switch (key)
+                {
+                    case { Key: ConsoleKey.Q }:
+                        {
+                            Console.WriteLine("현재 모든 유저가 어디에 있는지 표시");
+                            foreach (var session in SessionManager.Instance.clientSessions.Values)
+                            {
+                                if (session.UserInfo != null)
+                                {
+                                    Console.WriteLine($"UserId: {session.UserInfo.UserId}, Nickname: {session.UserInfo.Nickname}, CurrentRoom: {session.Room?.roomInfo?.RoomId ?? -1}");
+                                }
+                            }
+                            break;
+                        }
+                }
                 Thread.Sleep(0);
             }
         }

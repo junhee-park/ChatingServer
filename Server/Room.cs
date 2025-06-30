@@ -39,16 +39,7 @@ namespace Server
         {
             lock (_lock)
             {
-                bool result = false;
-                foreach (var userInfo in roomInfo.UserInfos.Values)
-                {
-                    if (userInfo.UserId == userId)
-                    {
-                        result = roomInfo.UserInfos.Remove(userInfo.UserId);
-                        break;
-                    }
-                }
-                return result;
+                return roomInfo.UserInfos.Remove(userId);
             }
         }
 

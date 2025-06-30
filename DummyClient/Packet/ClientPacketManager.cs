@@ -39,6 +39,8 @@ public class PacketManager
         _makePacket.Add((ushort)MsgId.SEnterRoomAnyUser, MakePacket<S_EnterRoomAnyUser>);
         _handlers.Add((ushort)MsgId.SEnterLobbyAnyUser, PacketHandler.S_EnterLobbyAnyUserHandler);
         _makePacket.Add((ushort)MsgId.SEnterLobbyAnyUser, MakePacket<S_EnterLobbyAnyUser>);
+        _handlers.Add((ushort)MsgId.SLeaveRoomAnyUser, PacketHandler.S_LeaveRoomAnyUserHandler);
+        _makePacket.Add((ushort)MsgId.SLeaveRoomAnyUser, MakePacket<S_LeaveRoomAnyUser>);
         _handlers.Add((ushort)MsgId.STestChat, PacketHandler.S_TestChatHandler);
         _makePacket.Add((ushort)MsgId.STestChat, MakePacket<S_TestChat>);
 

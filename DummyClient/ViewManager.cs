@@ -11,13 +11,13 @@ using static System.Net.Mime.MediaTypeNames;
 
 public class ConsoleViewManager : IViewManager
 {
-    public void ShowRoomList(RepeatedField<RoomInfo> roomInfos)
+    public void ShowRoomList(MapField<int, RoomInfo> roomInfos)
     {
         Console.WriteLine(MethodBase.GetCurrentMethod().Name);
         foreach (var room in roomInfos)
         {
-            Console.WriteLine($"Room ID: {room.RoomId}, Name: {room.RoomName}, Master: {room.RoomMasterUserId}");
-            foreach (var user in room.UserInfos.Values)
+            Console.WriteLine($"Room ID: {room.Key}, Name: {room.Value.RoomName}, Master: {room.Value.RoomMasterUserId}");
+            foreach (var user in room.Value.UserInfos.Values)
             {
                 Console.WriteLine($" - User ID: {user.UserId}, Nickname: {user.Nickname}");
             }
@@ -44,10 +44,10 @@ public class ConsoleViewManager : IViewManager
         }
     }
 
-    public void ShowLobbyUserList(RepeatedField<UserInfo> userInfos)
+    public void ShowLobbyUserList(MapField<int, UserInfo> userInfos)
     {
         Console.WriteLine(MethodBase.GetCurrentMethod().Name);
-        foreach (var user in userInfos)
+        foreach (var user in userInfos.Values)
         {
             Console.WriteLine($"User ID: {user.UserId}, Nickname: {user.Nickname}");
 

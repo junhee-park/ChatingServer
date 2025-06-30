@@ -148,7 +148,7 @@ public static class PacketHandler
         {
             foreach(var room in RoomManager.Instance.rooms.Values)
             {
-                s_DeleteRoom.Rooms.Add(room.roomInfo);
+                s_DeleteRoom.Rooms.Add(room.roomInfo.RoomId, room.roomInfo);
             }
             clientSession.Room.Broadcast(s_DeleteRoom);
             clientSession.CurrentState = State.Lobby; // 방 삭제 후 Lobby 상태로 변경
@@ -177,7 +177,7 @@ public static class PacketHandler
         // 현재 존재하는 룸리스트 반환
         foreach (Room room in RoomManager.Instance.rooms.Values)
         {
-            s_RoomList.Rooms.Add(room.roomInfo);
+            s_RoomList.Rooms.Add(room.roomInfo.RoomId, room.roomInfo);
         }
         clientSession.Send(s_RoomList);
     }
@@ -249,7 +249,7 @@ public static class PacketHandler
                 ClientSession userSession = SessionManager.Instance.clientSessions[id];
                 UserInfo userInfo = userSession.UserInfo;
                 s_UserList.RoomId = 0; // 로비에서는 RoomId가 0
-                s_UserList.UserInfos.Add(userInfo);
+                s_UserList.UserInfos.Add(id, userInfo);
             }
         }
         else
@@ -260,7 +260,7 @@ public static class PacketHandler
                 s_UserList.RoomId = clientSession.Room.roomInfo.RoomId; // 현재 방의 ID 설정
                 foreach (UserInfo userInfo in clientSession.Room.roomInfo.UserInfos.Values)
                 {
-                    s_UserList.UserInfos.Add(userInfo);
+                    s_UserList.UserInfos.Add(userInfo.UserId, userInfo);
                 }
             }
             else
@@ -286,16 +286,29 @@ public static class PacketHandler
         clientSession.Room = null;
 
         // 패킷 생성
-        S_LeaveRoom s_LeaveRoom = new S_LeaveRoom();
-        s_LeaveRoom.Success = true;
-        s_LeaveRoom.RoomId = room.roomInfo.RoomId;
-        s_LeaveRoom.UserId = userId;
+        S_LeaveRoomAnyUser s_LeaveRoomAnyUser = new S_LeaveRoomAnyUser();
+        s_LeaveRoomAnyUser.RoomId = room.roomInfo.RoomId;
+        s_LeaveRoomAnyUser.UserInfo = clientSession.UserInfo;
 
         // 룸에 있는 모든 유저에게 퇴장 알림 패킷 전송
-        room.Broadcast(s_LeaveRoom);
+        room.Broadcast(s_LeaveRoomAnyUser);
 
-        // 로비에 있는 유저들에게 퇴장 알림 패킷 전송
-        RoomManager.Instance.BroadcastToLobby(s_LeaveRoom);
+        // 로비에 있는 유저들에게 로비 입장 패킷 전송
+        S_EnterLobbyAnyUser s_EnterLobbyAnyUser = new S_EnterLobbyAnyUser();
+        s_EnterLobbyAnyUser.UserInfo = clientSession.UserInfo;
+        RoomManager.Instance.BroadcastToLobby(s_EnterLobbyAnyUser);
+
+        // 퇴장하는 유저에게 방 목록과 로비 유저 리스트 전송
+        S_LeaveRoom s_LeaveRoom = new S_LeaveRoom();
+        foreach (var item in RoomManager.Instance.rooms)
+        {
+            s_LeaveRoom.Rooms.Add(item.Key, item.Value.roomInfo);
+        }
+        foreach (var item in RoomManager.Instance.userIds)
+        {
+            s_LeaveRoom.UserInfos.Add(item, SessionManager.Instance.clientSessions[item].UserInfo);
+        }
+        clientSession.Send(s_LeaveRoom);
     }
 
     public static void C_EnterLobbyHandler(Session session, IMessage message)
@@ -315,7 +328,7 @@ public static class PacketHandler
         // 룸 리스트
         foreach (var room in RoomManager.Instance.rooms.Values)
         {
-            s_EnterLobby.Rooms.Add(room.roomInfo);
+            s_EnterLobby.Rooms.Add(room.roomInfo.RoomId, room.roomInfo);
         }
 
         // 유저 리스트
@@ -324,7 +337,7 @@ public static class PacketHandler
             ClientSession userSession = SessionManager.Instance.GetClientSession(userId);
             if (userSession != null)
             {
-                s_EnterLobby.UserInfos.Add(userSession.UserInfo);
+                s_EnterLobby.UserInfos.Add(userId, userSession.UserInfo);
             }
         }
 

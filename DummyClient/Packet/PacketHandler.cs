@@ -24,7 +24,11 @@ public static class PacketHandler
         ServerSession serverSession = session as ServerSession;
         S_Chat s_ChatPacket = packet as S_Chat;
 
-        serverSession.ViewManager.ShowText($"{s_ChatPacket.UserId}[{s_ChatPacket.Timestamp.ToDateTime()}]: {s_ChatPacket.Msg}");
+        string nickname = string.Empty;
+        if (RoomManager.Instance.CurrentRoom != null && RoomManager.Instance.CurrentRoom.UserInfos.TryGetValue(s_ChatPacket.UserId, out UserInfo userInfo))
+            nickname = userInfo.Nickname;
+
+        serverSession.ViewManager.ShowText($"{nickname} {s_ChatPacket.UserId}[{s_ChatPacket.Timestamp.ToDateTime()}]: {s_ChatPacket.Msg}");
     }
 
     public static void S_PingHandler(Session session, IMessage packet)
@@ -189,7 +193,14 @@ public static class PacketHandler
         ServerSession serverSession = session as ServerSession;
         S_LeaveRoom s_LeaveRoomPacket = packet as S_LeaveRoom;
 
-        RoomManager.Instance.LeaveRoom(serverSession.UserInfo);
+        RoomManager.Instance.Refresh(s_LeaveRoomPacket.Rooms);
+        RoomManager.Instance.RefreshUserInfos(s_LeaveRoomPacket.UserInfos);
+        RoomManager.Instance.CurrentRoom = null; // 현재 방 정보 초기화
+
+        // 방 목록과 유저 목록 정보를 뷰 매니저에 전달하여 UI 갱신
+        serverSession.ViewManager.ShowRoomList(s_LeaveRoomPacket.Rooms);
+        serverSession.ViewManager.ShowLobbyUserList(s_LeaveRoomPacket.UserInfos);
+        serverSession.ViewManager.ShowLobbyScreen(); // 로비 화면으로 전환
     }
 
     public static void S_EnterLobbyHandler(Session session, IMessage packet)
@@ -210,5 +221,16 @@ public static class PacketHandler
         serverSession.ViewManager.ShowRoomList(s_EnterLobby.Rooms);
         serverSession.ViewManager.ShowLobbyUserList(s_EnterLobby.UserInfos);
 
+    }
+
+    public static void S_LeaveRoomAnyUserHandler(Session session, IMessage packet)
+    {
+        ServerSession serverSession = session as ServerSession;
+        S_LeaveRoomAnyUser s_LeaveRoomAnyUser = packet as S_LeaveRoomAnyUser;
+
+        RoomManager.Instance.LeaveRoom(s_LeaveRoomAnyUser.UserInfo);
+
+        serverSession.ViewManager.ShowRemovedUser(s_LeaveRoomAnyUser.RoomId, s_LeaveRoomAnyUser.UserInfo);
+        serverSession.ViewManager.ShowLobbyUserList(RoomManager.Instance.UserInfos);
     }
 }
