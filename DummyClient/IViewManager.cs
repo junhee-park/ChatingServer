@@ -15,4 +15,5 @@ public interface IViewManager
     void ShowAddedRoom(RoomInfo roomInfo);
     void ShowAddedUser(int roomId, UserInfo userInfo);
     void ShowRemovedUser(int roomId, UserInfo userInfo);
+    void ShowRemovedRoom(int roomId);
 }

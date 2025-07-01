@@ -66,7 +66,7 @@ public class ConsoleViewManager : IViewManager
     public void ShowChangedNickname(UserInfo userInfo, string newName)
     {
         Console.WriteLine(MethodBase.GetCurrentMethod().Name);
-        RoomManager.Instance.UserInfos[userInfo.UserId].Nickname = newName;
+        userInfo.Nickname = newName;
         Console.WriteLine($"User {userInfo.UserId} changed nickname to {newName}");
     }
 
@@ -103,5 +103,12 @@ public class ConsoleViewManager : IViewManager
         Console.WriteLine(MethodBase.GetCurrentMethod().Name);
         // 특정 방에 유저가 떠났다고 콘솔창에 표시
         Console.WriteLine($"Removed Room ID: {roomId}, Nickname: {userInfo.Nickname}, UserId: {userInfo.UserId}");
+    }
+
+    public void ShowRemovedRoom(int roomId)
+    {
+        Console.WriteLine(MethodBase.GetCurrentMethod().Name);
+        // 방이 삭제되었다고 콘솔창에 표시
+        Console.WriteLine($"Removed Room ID: {roomId}");
     }
 }

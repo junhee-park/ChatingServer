@@ -62,6 +62,7 @@ public static class PacketHandler
         }
 
         UserInfo userInfo = RoomManager.Instance.UserInfos[s_SetNicknamePacket.UserId];
+        userInfo.Nickname = s_SetNicknamePacket.Nickname;
 
         serverSession.ViewManager.ShowChangedNickname(userInfo, s_SetNicknamePacket.Nickname);
     }
@@ -114,7 +115,13 @@ public static class PacketHandler
         var roomManager = RoomManager.Instance;
         // 방 삭제 로직
         roomManager.Refresh(s_DeleteRoomPacket.Rooms);
+        roomManager.RefreshUserInfos(s_DeleteRoomPacket.LobbyUserInfos);
         roomManager.CurrentRoom = null; // 현재 방 정보 초기화
+
+        // 방 목록과 유저 목록 정보를 뷰 매니저에 전달하여 UI 갱신
+        serverSession.ViewManager.ShowRoomList(s_DeleteRoomPacket.Rooms);
+        serverSession.ViewManager.ShowLobbyUserList(s_DeleteRoomPacket.LobbyUserInfos);
+        serverSession.ViewManager.ShowLobbyScreen(); // 로비 화면으로 전환
     }
 
     public static void S_RoomListHandler(Session session, IMessage packet)
@@ -138,7 +145,6 @@ public static class PacketHandler
         }
 
         RoomManager.Instance.CurrentRoom = s_EnterRoomPacket.RoomInfo; // 현재 방 정보 설정
-        RoomManager.Instance.AddUserToRoom(s_EnterRoomPacket.RoomInfo.RoomId, serverSession.UserInfo);
         serverSession.ViewManager.ShowRoomScreen();
         serverSession.ViewManager.ShowRoomUserList(RoomManager.Instance.Rooms[s_EnterRoomPacket.RoomInfo.RoomId].UserInfos);
     }
@@ -214,8 +220,8 @@ public static class PacketHandler
         // 로비에 입장했을 때 유저 리스트 갱신
         RoomManager.Instance.RefreshUserInfos(s_EnterLobby.UserInfos);
 
-        // 본인 유저 인포를 세션에 캐싱
-        serverSession.UserInfo = RoomManager.Instance.UserInfos[s_EnterLobby.UserId];
+        // 유저 인포를 세션에 캐싱
+        serverSession.UserInfo = s_EnterLobby.UserInfo;
 
         // 뷰 매니저에 룸 리스트와 유저 리스트를 전달하여 UI 갱신
         serverSession.ViewManager.ShowRoomList(s_EnterLobby.Rooms);
@@ -232,5 +238,22 @@ public static class PacketHandler
 
         serverSession.ViewManager.ShowRemovedUser(s_LeaveRoomAnyUser.RoomId, s_LeaveRoomAnyUser.UserInfo);
         serverSession.ViewManager.ShowLobbyUserList(RoomManager.Instance.UserInfos);
+    }
+
+    public static void S_DeleteRoomInLobbyHandler(Session session, IMessage packet)
+    {
+        ServerSession serverSession = session as ServerSession;
+        S_DeleteRoomInLobby s_DeleteRoomInLobby = packet as S_DeleteRoomInLobby;
+
+        // 방 삭제 로직
+        RoomManager.Instance.DeleteRoom(s_DeleteRoomInLobby.RoomId);
+        serverSession.ViewManager.ShowRemovedRoom(s_DeleteRoomInLobby.RoomId);
+
+        // 방에 있는 유저들을 방에서 제거하고 로비에 추가
+        foreach (var userInfo in s_DeleteRoomInLobby.UserInfos)
+        {
+            RoomManager.Instance.AddUserToLobby(userInfo);
+            serverSession.ViewManager.ShowAddedUser(0, userInfo);
+        }
     }
 }

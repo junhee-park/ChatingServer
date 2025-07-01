@@ -182,16 +182,7 @@ namespace DummyClient
                             // 테스트 로그
                             testServerSession.testLog = () =>
                             {
-                                if (RoomManager.Instance.Rooms.ContainsKey(currentRoom.RoomId))
-                                {
-                                    foreach(var user in currentRoom.UserInfos.Values)
-                                    {
-                                        if (user.UserId == testServerSession.UserInfo.UserId)
-                                        {
-                                            Console.WriteLine($"문제 발생");
-                                        }
-                                    }
-                                }
+                                
                             };
 
                             testServerSession.Send(c_LeaveRoom);
@@ -199,7 +190,7 @@ namespace DummyClient
                         }
                     case { Key: ConsoleKey.A }:
                         {
-                            Console.WriteLine("\nA Key Pressed. Sending C_LeaveRoom Messages...");
+                            Console.WriteLine("\nA Key Pressed. Sending C_Chat Messages...");
 
                             var testServerSession = serverSession as TestServerSession;
                             C_Chat c_Chat = new C_Chat();

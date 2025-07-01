@@ -31,6 +31,7 @@ namespace Server
                     case { Key: ConsoleKey.Q }:
                         {
                             Console.WriteLine("현재 모든 유저가 어디에 있는지 표시");
+                            Console.WriteLine("세션 매니저 유저 목록");
                             foreach (var session in SessionManager.Instance.clientSessions.Values)
                             {
                                 if (session.UserInfo != null)
@@ -38,6 +39,24 @@ namespace Server
                                     Console.WriteLine($"UserId: {session.UserInfo.UserId}, Nickname: {session.UserInfo.Nickname}, CurrentRoom: {session.Room?.roomInfo?.RoomId ?? -1}");
                                 }
                             }
+                            Console.WriteLine("룸 매니저 로비 유저 목록");
+                            foreach (var userId in RoomManager.Instance.userIds)
+                            {
+                                if (SessionManager.Instance.clientSessions.TryGetValue(userId, out ClientSession clientSession))
+                                {
+                                    Console.WriteLine($"UserId: {clientSession.UserInfo.UserId}, Nickname: {clientSession.UserInfo.Nickname}, CurrentRoom: {clientSession.Room?.roomInfo?.RoomId ?? -1}");
+                                }
+                            }
+                            Console.WriteLine("룸 매니저 방 목록");
+                            foreach (var room in RoomManager.Instance.rooms.Values)
+                            {
+                                Console.WriteLine($"RoomId: {room.roomInfo.RoomId}, RoomName: {room.roomInfo.RoomName}, RoomMasterUserId: {room.roomInfo.RoomMasterUserId}");
+                                foreach (var userInfo in room.roomInfo.UserInfos.Values)
+                                {
+                                    Console.WriteLine($"  UserId: {userInfo.UserId}, Nickname: {userInfo.Nickname}");
+                                }
+                            }
+
                             break;
                         }
                 }

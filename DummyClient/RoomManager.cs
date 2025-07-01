@@ -63,6 +63,14 @@ public class RoomManager
         }
     }
 
+    public void DeleteRoom(int roomId)
+    {
+        lock (_lock)
+        {
+            Rooms.Remove(roomId);
+        }
+    }
+
     public void Refresh(MapField<int, RoomInfo> roomInfoList)
     {
         Rooms.Clear();

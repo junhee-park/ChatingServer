@@ -44,11 +44,6 @@ namespace Server
                 return false;
             if (room.roomInfo.RoomMasterUserId != masterUserId)
                 return false; // 방장만 방을 삭제할 수 있음
-            foreach (var userInfo in room.roomInfo.UserInfos.Values)
-            {
-                userIds.Add(userInfo.UserId);
-            }
-
             return rooms.TryRemove(new KeyValuePair<int, Room>(roomId, room));
         }
 
@@ -72,8 +67,6 @@ namespace Server
         {
             if (rooms.TryGetValue(roomId, out Room room))
             {
-                AddUserToLobby(userId);
-
                 return room.LeaveUser(userId);
             }
             return false;
