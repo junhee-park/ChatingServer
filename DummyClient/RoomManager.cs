@@ -63,6 +63,14 @@ public class RoomManager
         }
     }
 
+    public void LeaveLobby(UserInfo userInfo)
+    {
+        lock (_lock)
+        {
+            UserInfos.Remove(userInfo.UserId);
+        }
+    }
+
     public void DeleteRoom(int roomId)
     {
         lock (_lock)

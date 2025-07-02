@@ -72,13 +72,24 @@ namespace Server
             return false;
         }
 
+        public bool LeaveUserFromLobby(int userId)
+        {
+            lock (_lock)
+            {
+                return userIds.Remove(userId); // 로비에서 유저 제거
+            }
+        }
+
         public void BroadcastToLobby(IMessage message)
         {
-            foreach (var userId in userIds)
+            lock ( _lock)
             {
-                if (SessionManager.Instance.clientSessions.TryGetValue(userId, out ClientSession clientSession))
+                foreach (var userId in userIds)
                 {
-                    clientSession.Send(message);
+                    if (SessionManager.Instance.clientSessions.TryGetValue(userId, out ClientSession clientSession))
+                    {
+                        clientSession.Send(message);
+                    }
                 }
             }
         }

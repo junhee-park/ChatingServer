@@ -30,6 +30,7 @@ enum MsgId {
 	S_ENTER_LOBBY_ANY_USER = 21;
 	S_LEAVE_ROOM_ANY_USER = 22;
 	S_DELETE_ROOM_IN_LOBBY = 23;
+	S_LEAVE_LOBBY_ANY_USER = 24;
 	S_TEST_CHAT = 998;
 	C_TEST_CHAT = 999;
 }
@@ -132,6 +133,10 @@ message S_LeaveRoomAnyUser {
 message S_DeleteRoomInLobby {
   int32 roomId = 1;
   repeated UserInfo userInfos = 2; 
+}
+
+message S_LeaveLobbyAnyUser {
+  UserInfo userInfo = 1; 
 }
 
 message S_TestChat {

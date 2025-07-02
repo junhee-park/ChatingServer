@@ -43,6 +43,8 @@ public class PacketManager
         _makePacket.Add((ushort)MsgId.SLeaveRoomAnyUser, MakePacket<S_LeaveRoomAnyUser>);
         _handlers.Add((ushort)MsgId.SDeleteRoomInLobby, PacketHandler.S_DeleteRoomInLobbyHandler);
         _makePacket.Add((ushort)MsgId.SDeleteRoomInLobby, MakePacket<S_DeleteRoomInLobby>);
+        _handlers.Add((ushort)MsgId.SLeaveLobbyAnyUser, PacketHandler.S_LeaveLobbyAnyUserHandler);
+        _makePacket.Add((ushort)MsgId.SLeaveLobbyAnyUser, MakePacket<S_LeaveLobbyAnyUser>);
         _handlers.Add((ushort)MsgId.STestChat, PacketHandler.S_TestChatHandler);
         _makePacket.Add((ushort)MsgId.STestChat, MakePacket<S_TestChat>);
 

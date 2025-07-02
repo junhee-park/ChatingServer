@@ -67,5 +67,13 @@ namespace Server
             clientSessions.Remove(user.UserInfo.UserId);
 
         }
+
+        public void RemoveSession(ClientSession clientSession)
+        {
+            lock (_lock)
+            {
+                clientSessions.Remove(clientSession.UserInfo.UserId);
+            }
+        }
     }
 }

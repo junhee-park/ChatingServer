@@ -256,4 +256,14 @@ public static class PacketHandler
             serverSession.ViewManager.ShowAddedUser(0, userInfo);
         }
     }
+
+    public static void S_LeaveLobbyAnyUserHandler(Session session, IMessage packet)
+    {
+        ServerSession serverSession = session as ServerSession;
+        S_LeaveLobbyAnyUser s_LeaveLobbyAnyUser = packet as S_LeaveLobbyAnyUser;
+
+        RoomManager.Instance.LeaveLobby(s_LeaveLobbyAnyUser.UserInfo);
+        serverSession.ViewManager.ShowRemovedUser(0, s_LeaveLobbyAnyUser.UserInfo);
+
+    }
 }

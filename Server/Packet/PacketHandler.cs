@@ -127,7 +127,7 @@ public static class PacketHandler
             s_CreateRoom.Success = true;
             RoomManager.Instance.BroadcastToLobby(s_CreateRoom);
 
-            RoomManager.Instance.userIds.Remove(userId); // 로비에서 유저 제거
+            RoomManager.Instance.LeaveUserFromLobby(userId); // 로비에서 유저 제거
             clientSession.CurrentState = State.Room;
             clientSession.Room = room; // 현재 방 정보 설정
         }
@@ -167,7 +167,7 @@ public static class PacketHandler
                 // 유저 상태 변경
                 cs.CurrentState = State.Lobby;
                 cs.Room = null;
-                RoomManager.Instance.userIds.Add(userInfo.UserId);
+                RoomManager.Instance.AddUserToLobby(userInfo.UserId);
 
                 s_DeleteRoomInLobby.UserInfos.Add(userInfo);
             }
@@ -235,7 +235,7 @@ public static class PacketHandler
 
         // 룸에 유저 추가
         room.AddUser(clientSession);
-        RoomManager.Instance.userIds.Remove(userId); // 로비에서 유저 제거
+        RoomManager.Instance.LeaveUserFromLobby(userId); // 로비에서 유저 제거
         clientSession.CurrentState = State.Room; // 현재 상태를 Room으로 변경
         clientSession.Room = room; // 현재 방 정보 설정
         s_EnterRoom.Success = true;
