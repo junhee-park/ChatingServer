@@ -47,10 +47,8 @@ public static class PacketHandler
     {
         ClientSession clientSession = session as ClientSession;
         C_Ping c_PingPacket = packet as C_Ping;
-        // Ping 응답 패킷 생성
-        S_Ping s_Ping = new S_Ping();
-        // Ping 응답 전송
-        clientSession.Send(s_Ping);
+
+        clientSession.IsPing = false; // 핑 메시지를 받았음을 표시
     }
 
     public static void C_TestChatHandler(Session session, IMessage packet)

@@ -25,6 +25,9 @@ namespace Server
 
         public State CurrentState { get; set; } = State.None; // 현재 상태 (Lobby, Room 등)
 
+        public DateTime LastRecvDate { get; set; } = DateTime.UtcNow;
+        public bool IsPing { get; set; } // 핑 요청 여부
+
         public ClientSession(Socket socket, int userId) : base(socket)
         {
             UserInfo.UserId = userId;
@@ -47,6 +50,8 @@ namespace Server
         public override void OnRecvPacket(ArraySegment<byte> data)
         {
             PacketManager.Instance.InvokePacketHandler(this, data);
+            LastRecvDate = DateTime.UtcNow;
+            IsPing = false;
         }
 
         public override void OnSend(int bytesTransferred)
