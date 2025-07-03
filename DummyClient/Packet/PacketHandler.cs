@@ -163,6 +163,7 @@ public static class PacketHandler
 
         roomManager.AddUserToRoom(s_EnterRoomAnyUserPacket.RoomId, s_EnterRoomAnyUserPacket.UserInfo);
         serverSession.ViewManager.ShowAddedUser(s_EnterRoomAnyUserPacket.RoomId, s_EnterRoomAnyUserPacket.UserInfo);
+        serverSession.ViewManager.ShowRemovedUser(0, s_EnterRoomAnyUserPacket.UserInfo); // 로비에서 제거
     }
 
     /// <summary>
@@ -234,7 +235,7 @@ public static class PacketHandler
         ServerSession serverSession = session as ServerSession;
         S_LeaveRoomAnyUser s_LeaveRoomAnyUser = packet as S_LeaveRoomAnyUser;
 
-        RoomManager.Instance.LeaveRoom(s_LeaveRoomAnyUser.UserInfo);
+        RoomManager.Instance.LeaveRoom(s_LeaveRoomAnyUser.RoomId, s_LeaveRoomAnyUser.UserInfo);
 
         serverSession.ViewManager.ShowRemovedUser(s_LeaveRoomAnyUser.RoomId, s_LeaveRoomAnyUser.UserInfo);
         serverSession.ViewManager.ShowLobbyUserList(RoomManager.Instance.UserInfos);

@@ -329,9 +329,7 @@ public static class PacketHandler
         RoomManager.Instance.AddUserToLobby(userId);
 
         // 로비에 있는 유저들에게 로비 입장 패킷 전송
-        S_EnterLobbyAnyUser s_EnterLobbyAnyUser = new S_EnterLobbyAnyUser();
-        s_EnterLobbyAnyUser.UserInfo = clientSession.UserInfo;
-        RoomManager.Instance.BroadcastToLobby(s_EnterLobbyAnyUser);
+        RoomManager.Instance.BroadcastToLobby(s_LeaveRoomAnyUser);
     }
 
     public static void C_EnterLobbyHandler(Session session, IMessage message)

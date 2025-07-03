@@ -53,11 +53,11 @@ public class RoomManager
         }
     }
 
-    public void LeaveRoom(UserInfo userInfo)
+    public void LeaveRoom(int roomId, UserInfo userInfo)
     {
         lock (_lock)
         {
-            Rooms.TryGetValue(CurrentRoom.RoomId, out RoomInfo roomInfo);
+            Rooms.TryGetValue(roomId, out RoomInfo roomInfo);
             roomInfo.UserInfos.Remove(userInfo.UserId);
             UserInfos.Add(userInfo.UserId, userInfo); // 유저를 로비로 이동
         }
