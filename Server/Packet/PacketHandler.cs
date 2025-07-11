@@ -33,13 +33,14 @@ public static class PacketHandler
         s_Chat.Timestamp = Timestamp.FromDateTime(DateTime.UtcNow);
 
         // 채팅 메시지를 룸에 있는 모든 유저에게 전송
-        if (clientSession.CurrentState == State.Room && clientSession.Room != null)
+        if (clientSession.CurrentState == UserState.Room && clientSession.Room != null)
         {
             clientSession.Room.Broadcast(s_Chat);
         }
         else
         {
             Console.WriteLine($"[C_ChatHandler] User {userId} is not in a room.");
+
         }
     }
 
@@ -76,17 +77,17 @@ public static class PacketHandler
 
         // 로비에서만 닉네임 설정 가능
         S_SetNickname s_SetNickname = new S_SetNickname();
-        if (clientSession.CurrentState != State.Lobby)
+        if (clientSession.CurrentState != UserState.Lobby)
         {
             Console.WriteLine($"[C_SetNicknameHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
-            s_SetNickname.Success = false;
+            s_SetNickname.ErrorCode = ErrorCode.NotInLobby;
             s_SetNickname.Reason = "You must be in the Lobby to set a nickname.";
             clientSession.Send(s_SetNickname);
             return;
         }
 
         clientSession.UserInfo.Nickname = c_SetNicknamePacket.Nickname;
-        s_SetNickname.Success = true;
+        s_SetNickname.ErrorCode = ErrorCode.Success;
         s_SetNickname.UserId = clientSession.UserInfo.UserId;
         s_SetNickname.Nickname = c_SetNicknamePacket.Nickname;
         RoomManager.Instance.BroadcastToLobby(s_SetNickname);
@@ -109,10 +110,10 @@ public static class PacketHandler
         // 패킷 생성
         S_CreateRoom s_CreateRoom = new S_CreateRoom();
 
-        if (clientSession.CurrentState != State.Lobby)
+        if (clientSession.CurrentState != UserState.Lobby)
         {
             Console.WriteLine($"[C_CreateRoomHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
-            s_CreateRoom.Success = false;
+            s_CreateRoom.ErrorCode = ErrorCode.NotInLobby;
             s_CreateRoom.Reason = "You must be in the Lobby to create a room.";
             clientSession.Send(s_CreateRoom);
         }
@@ -122,11 +123,11 @@ public static class PacketHandler
             room.AddUser(clientSession);
             RoomInfo roomInfo = room.roomInfo;
             s_CreateRoom.RoomInfo = roomInfo;
-            s_CreateRoom.Success = true;
+            s_CreateRoom.ErrorCode = ErrorCode.Success;
             RoomManager.Instance.BroadcastToLobby(s_CreateRoom);
 
             RoomManager.Instance.LeaveUserFromLobby(userId); // 로비에서 유저 제거
-            clientSession.CurrentState = State.Room;
+            clientSession.CurrentState = UserState.Room;
             clientSession.Room = room; // 현재 방 정보 설정
         }
     }
@@ -139,39 +140,47 @@ public static class PacketHandler
         // 패킷 생성
         S_DeleteRoom s_DeleteRoom = new S_DeleteRoom();
         Room clientSessionCurrentRoom = clientSession.Room;
+        if (clientSessionCurrentRoom == null)
+        {
+            Console.WriteLine($"[C_DeleteRoomHandler] User {clientSession.UserInfo.UserId} is not in a room.");
+            s_DeleteRoom.ErrorCode = ErrorCode.NotInRoom;
+            s_DeleteRoom.Reason = "You are not in a room.";
+            clientSession.Send(s_DeleteRoom);
+            return;
+        }
 
         foreach (var room in RoomManager.Instance.rooms.Values)
         {
             s_DeleteRoom.Rooms.Add(room.roomInfo.RoomId, room.roomInfo);
         }
-        foreach (var userId in RoomManager.Instance.userIds)
-        {
-            s_DeleteRoom.LobbyUserInfos.Add(userId, SessionManager.Instance.clientSessions[userId].UserInfo);
-        }
+        RoomManager.Instance.GetLobbyUsers(s_DeleteRoom.LobbyUserInfos); // 로비 유저 리스트 가져오기
 
         bool success = RoomManager.Instance.RemoveRoom(clientSessionCurrentRoom.roomInfo.RoomId, clientSession.UserInfo.UserId);
-        s_DeleteRoom.Success = success;
+        s_DeleteRoom.ErrorCode = success ? ErrorCode.Success : ErrorCode.NotAuthorized;
         if (success)
         {
             clientSessionCurrentRoom.Broadcast(s_DeleteRoom);
 
-            S_DeleteRoomInLobby s_DeleteRoomInLobby = new S_DeleteRoomInLobby();
-            s_DeleteRoomInLobby.RoomId = clientSessionCurrentRoom.roomInfo.RoomId;
+            S_DeleteAnyRoomInLobby s_DeleteAnyRoomInLobby = new S_DeleteAnyRoomInLobby();
+            s_DeleteAnyRoomInLobby.RoomId = clientSessionCurrentRoom.roomInfo.RoomId;
 
             // 방에 있는 모든 유저들을 로비로 이동
-            foreach (var userInfo in clientSessionCurrentRoom.roomInfo.UserInfos.Values)
+            lock (clientSessionCurrentRoom._lock)
             {
-                SessionManager.Instance.clientSessions.TryGetValue(userInfo.UserId, out ClientSession cs);
-                // 유저 상태 변경
-                cs.CurrentState = State.Lobby;
-                cs.Room = null;
-                RoomManager.Instance.AddUserToLobby(userInfo.UserId);
+                foreach (var userInfo in clientSessionCurrentRoom.roomInfo.UserInfos.Values)
+                {
+                    SessionManager.Instance.clientSessions.TryGetValue(userInfo.UserId, out ClientSession cs);
+                    // 유저 상태 변경
+                    cs.CurrentState = UserState.Lobby;
+                    cs.Room = null;
+                    RoomManager.Instance.AddUserToLobby(userInfo.UserId);
 
-                s_DeleteRoomInLobby.UserInfos.Add(userInfo);
+                    s_DeleteAnyRoomInLobby.UserInfos.Add(userInfo);
+                }
             }
 
             // 로비에 있는 유저들에게 삭제되는 방 정보와 로비에 추가될 유저 정보 전송
-            RoomManager.Instance.BroadcastToLobby(s_DeleteRoomInLobby);
+            RoomManager.Instance.BroadcastToLobby(s_DeleteAnyRoomInLobby);
         }
         else
         {
@@ -215,17 +224,17 @@ public static class PacketHandler
         if (room == null)
         {
             Console.WriteLine($"[C_EnterRoomHandler] Room {c_EnterRoomPacket.RoomId} not found.");
-            s_EnterRoom.Success = false;
+            s_EnterRoom.ErrorCode = ErrorCode.RoomNotFound;
             s_EnterRoom.Reason = "Room not found.";
             clientSession.Send(s_EnterRoom);
             return;
         }
 
         // 룸에 입장할 수 있는 상태인지 확인
-        if (clientSession.CurrentState != State.Lobby)
+        if (clientSession.CurrentState != UserState.Lobby)
         {
             Console.WriteLine($"[C_EnterRoomHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
-            s_EnterRoom.Success = false;
+            s_EnterRoom.ErrorCode = ErrorCode.NotInLobby;
             s_EnterRoom.Reason = "You must be in the Lobby to enter a room.";
             clientSession.Send(s_EnterRoom);
             return;
@@ -234,9 +243,9 @@ public static class PacketHandler
         // 룸에 유저 추가
         room.AddUser(clientSession);
         RoomManager.Instance.LeaveUserFromLobby(userId); // 로비에서 유저 제거
-        clientSession.CurrentState = State.Room; // 현재 상태를 Room으로 변경
+        clientSession.CurrentState = UserState.Room; // 현재 상태를 Room으로 변경
         clientSession.Room = room; // 현재 방 정보 설정
-        s_EnterRoom.Success = true;
+        s_EnterRoom.ErrorCode = ErrorCode.Success;
         s_EnterRoom.RoomInfo = room.roomInfo;
 
         // 룸 입장 응답 패킷 전송
@@ -262,7 +271,7 @@ public static class PacketHandler
         S_UserList s_UserList = new S_UserList();
 
         // 로비에 있을 경우 로비 유저 리스트 전송
-        if (clientSession.CurrentState == State.Lobby)
+        if (clientSession.CurrentState == UserState.Lobby)
         {
             foreach (int id in RoomManager.Instance.userIds)
             {
@@ -275,7 +284,7 @@ public static class PacketHandler
         else
         {
             // 룸에 있을 경우 룸 유저 리스트 전송
-            if (clientSession.CurrentState == State.Room && clientSession.Room != null)
+            if (clientSession.CurrentState == UserState.Room && clientSession.Room != null)
             {
                 s_UserList.RoomId = clientSession.Room.roomInfo.RoomId; // 현재 방의 ID 설정
                 foreach (UserInfo userInfo in clientSession.Room.roomInfo.UserInfos.Values)
@@ -300,21 +309,27 @@ public static class PacketHandler
         // 유저 아이디 추출
         int userId = clientSession.UserInfo.UserId;
 
-        RoomManager.Instance.LeaveUserFromRoom(clientSession.Room.roomInfo.RoomId, userId);
-        clientSession.CurrentState = State.Lobby; // 현재 상태를 Lobby로 변경
+        S_LeaveRoom s_LeaveRoom = new S_LeaveRoom();
+
         Room room = clientSession.Room; // 현재 방 정보
+        if (clientSession.CurrentState != UserState.Room)
+        {
+            Console.WriteLine($"[C_LeaveRoomHandler] User {userId} is not in a room.");
+            s_LeaveRoom.ErrorCode = ErrorCode.NotInRoom;
+            s_LeaveRoom.UserState = clientSession.CurrentState;
+            clientSession.Send(s_LeaveRoom);
+            return; // 현재 상태가 Room이 아닐 경우 처리하지 않음
+        }
+        RoomManager.Instance.LeaveUserFromRoom(clientSession.Room.roomInfo.RoomId, userId);
+        clientSession.CurrentState = UserState.Lobby; // 현재 상태를 Lobby로 변경
         clientSession.Room = null;
 
         // 퇴장하는 유저에게 방 목록과 로비 유저 리스트 전송
-        S_LeaveRoom s_LeaveRoom = new S_LeaveRoom();
         foreach (var item in RoomManager.Instance.rooms)
         {
             s_LeaveRoom.Rooms.Add(item.Key, item.Value.roomInfo);
         }
-        foreach (var item in RoomManager.Instance.userIds)
-        {
-            s_LeaveRoom.UserInfos.Add(item, SessionManager.Instance.clientSessions[item].UserInfo);
-        }
+        RoomManager.Instance.GetLobbyUsers(s_LeaveRoom.UserInfos); // 로비 유저 리스트 가져오기
         clientSession.Send(s_LeaveRoom);
 
         // 패킷 생성
@@ -338,7 +353,7 @@ public static class PacketHandler
         C_EnterLobby c_EnterLobby = message as C_EnterLobby;
 
         // 현재 상태를 로비로 변경
-        clientSession.CurrentState = State.Lobby;
+        clientSession.CurrentState = UserState.Lobby;
         clientSession.Room = null; // 현재 방 정보 초기화
 
         // 패킷 생성
@@ -371,5 +386,18 @@ public static class PacketHandler
         S_EnterLobbyAnyUser s_EnterLobbyAnyUser = new S_EnterLobbyAnyUser();
         s_EnterLobbyAnyUser.UserInfo = clientSession.UserInfo;
         RoomManager.Instance.BroadcastToLobby(s_EnterLobbyAnyUser);
+    }
+
+    public static void C_UserInfoHandler(Session session, IMessage message)
+    {
+        ClientSession clientSession = session as ClientSession;
+
+        S_UserInfo s_UserInfo = new S_UserInfo();
+        s_UserInfo.UserInfo = clientSession.UserInfo;
+        s_UserInfo.UserState = clientSession.CurrentState;
+        if (clientSession.CurrentState == UserState.Room)
+            s_UserInfo.CurrentRoomId = clientSession.Room.roomInfo.RoomId;
+
+        clientSession.Send(s_UserInfo);
     }
 }

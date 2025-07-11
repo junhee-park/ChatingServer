@@ -1,24 +1,26 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Net;
 using System.Net.Sockets;
 using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using Google.Protobuf.WellKnownTypes;
 using ServerCore;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DummyClient
 {
     internal class Program
     {
-        static ServerSession serverSession;
+        public static ServerSession serverSession;
         static List<Session> sessions = new List<Session>();
 
         static object _lock = new object();
 
         // testConnection * (1000 / testSendMs) = tps
-        static int testConnection = 1;
-        static int testSendMs = 100;
+        static int testConnection = 10;
+        static int testSendMs = 1000;
 
 
         static void Main(string[] args)
@@ -53,6 +55,37 @@ namespace DummyClient
                     break;
             }
 
+            //CommonTestLoop();
+
+            DummyTest();
+            Console.ReadKey();
+        }
+
+        public static void SetNickname()
+        {
+            Console.WriteLine("\nQ Key Pressed. Sending C_SetNickname Messages...");
+
+            var testServerSession = serverSession as TestServerSession;
+            C_SetNickname c_SetNickname = new C_SetNickname();
+            Console.Write("Enter your nickname:");
+            string nickname = Console.ReadLine();
+            testServerSession.TempNickname = nickname;
+            c_SetNickname.Nickname = nickname;
+
+            // 테스트 로그
+            string temp = testServerSession.UserInfo.Nickname;
+            testServerSession.testLog = () =>
+            {
+
+                Console.WriteLine($"{temp} -> {testServerSession.TempNickname}");
+
+            };
+
+            testServerSession.Send(c_SetNickname);
+        }
+
+        public static void CommonTestLoop()
+        {
             while (true)
             {
                 Console.WriteLine("\nPress Q to set nickname, W to create room, E to list rooms, Spacebar to send test messages, or Escape to exit.");
@@ -96,7 +129,7 @@ namespace DummyClient
                             testServerSession.testLog = () =>
                             {
                                 // 룸 리스트 표시
-                                foreach (var room in RoomManager.Instance.Rooms)
+                                foreach (var room in testServerSession.RoomManager.Rooms)
                                 {
                                     Console.WriteLine($"[{room.Key}] {room.Value.RoomName}");
                                 }
@@ -156,12 +189,12 @@ namespace DummyClient
                             var testServerSession = serverSession as TestServerSession;
                             C_DeleteRoom c_deleteRoom = new C_DeleteRoom();
 
-                            var currentRoom = RoomManager.Instance.CurrentRoom;
+                            var currentRoom = serverSession.RoomManager.CurrentRoom;
 
                             // 테스트 로그
                             testServerSession.testLog = () =>
                             {
-                                if (!RoomManager.Instance.Rooms.ContainsKey(currentRoom.RoomId))
+                                if (!serverSession.RoomManager.Rooms.ContainsKey(currentRoom.RoomId))
                                 {
                                     Console.WriteLine($"{currentRoom.RoomName} 방 삭제 완료");
                                 }
@@ -177,12 +210,12 @@ namespace DummyClient
                             var testServerSession = serverSession as TestServerSession;
                             C_LeaveRoom c_LeaveRoom = new C_LeaveRoom();
 
-                            var currentRoom = RoomManager.Instance.CurrentRoom;
+                            var currentRoom = serverSession.RoomManager.CurrentRoom;
 
                             // 테스트 로그
                             testServerSession.testLog = () =>
                             {
-                                
+
                             };
 
                             testServerSession.Send(c_LeaveRoom);
@@ -203,7 +236,7 @@ namespace DummyClient
                             // 테스트 로그
                             testServerSession.testLog = () =>
                             {
-                                
+
                             };
 
                             testServerSession.Send(c_Chat);
@@ -213,7 +246,7 @@ namespace DummyClient
                         {
                             Console.WriteLine("\nS Key Pressed. 패킷을 보내지 않고 현재 룸 리스트 확인");
 
-                            RoomManager roomManager = RoomManager.Instance;
+                            RoomManager roomManager = serverSession.RoomManager;
                             if (roomManager.Rooms.Count == 0)
                             {
                                 Console.WriteLine("No rooms available.");
@@ -233,7 +266,7 @@ namespace DummyClient
                         {
                             Console.WriteLine("\nD Key Pressed. 패킷을 보내지 않고 현재 로비 유저 리스트 확인");
 
-                            RoomManager roomManager = RoomManager.Instance;
+                            RoomManager roomManager = serverSession.RoomManager;
                             if (roomManager.UserInfos.Count == 0)
                             {
                                 Console.WriteLine("No users available in the lobby.");
@@ -253,11 +286,11 @@ namespace DummyClient
                         {
                             Console.WriteLine("\nF Key Pressed. 패킷을 보내지 않고 현재 방 유저 리스트 확인");
 
-                            RoomManager roomManager = RoomManager.Instance;
+                            RoomManager roomManager = serverSession.RoomManager;
                             if (roomManager.CurrentRoom == null)
                             {
                                 // 로비 유저 리스트 출력
-                                Console.WriteLine("You are not in any room. Here are the users in the lobby:");                                
+                                Console.WriteLine("You are not in any room. Here are the users in the lobby:");
                             }
                             else
                             {
@@ -277,9 +310,9 @@ namespace DummyClient
 
                             var testServerSession = serverSession as TestServerSession;
                             C_UserList c_UserList = new C_UserList();
-                            c_UserList.RoomId = RoomManager.Instance.CurrentRoom?.RoomId ?? 0;
+                            c_UserList.RoomId = serverSession.RoomManager.CurrentRoom?.RoomId ?? 0;
 
-                            RoomManager roomManager = RoomManager.Instance;
+                            RoomManager roomManager = serverSession.RoomManager;
                             // 테스트 로그
                             testServerSession.testLog = () =>
                             {
@@ -348,32 +381,108 @@ namespace DummyClient
                         }
                 }
             }
-
-            //TestRtt();
-            Console.ReadKey();
         }
 
-        public static void SetNickname()
+        public static void DummyTest()
         {
-            Console.WriteLine("\nQ Key Pressed. Sending C_SetNickname Messages...");
-
-            var testServerSession = serverSession as TestServerSession;
-            C_SetNickname c_SetNickname = new C_SetNickname();
-            Console.Write("Enter your nickname:");
-            string nickname = Console.ReadLine();
-            testServerSession.TempNickname = nickname;
-            c_SetNickname.Nickname = nickname;
-
-            // 테스트 로그
-            string temp = testServerSession.UserInfo.Nickname;
-            testServerSession.testLog = () =>
+            foreach (var session in sessions)
             {
+                var dummySession = session as TestServerSession;
+                C_EnterLobby c_EnterLobby = new C_EnterLobby();
 
-                Console.WriteLine($"{temp} -> {testServerSession.TempNickname}");
+                dummySession.Send(c_EnterLobby);
+            }
 
-            };
+            Thread.Sleep(1000);
+            Console.WriteLine("DummyTest Start");
+            // DummyTest는 세션을 생성하고, 로비에 입장한 후 랜덤으로 행동을 취함
+            // 행동은 닉네임 변경, 방 생성, 방 입장, 채팅, 방 퇴장, 방 삭제 등
+            // 행동은 1초 간격으로 진행됨
+            while (true)
+            {
+                Thread.Sleep(testSendMs);
 
-            testServerSession.Send(c_SetNickname);
+                foreach (var session in sessions)
+                {
+                    var dummySession = session as TestServerSession;
+                    if (dummySession.CurrentState == UserState.Lobby)
+                    {
+                        var rnd = new Random();
+                        int num = rnd.Next(0, dummySession.RoomManager.Rooms.Count > 0 ? 3 : 2);
+                        if (num == 0)
+                        {
+                            //닉네임 변경
+                            dummySession.TempNickname = $"User_{rnd.Next()}";
+                            C_SetNickname c_SetNickname = new C_SetNickname();
+                            c_SetNickname.Nickname = dummySession.TempNickname;
+                            dummySession.Send(c_SetNickname);
+                        }
+                        else if (num == 1)
+                        {
+                            //방 생성
+                            C_CreateRoom c_CreateRoom = new C_CreateRoom();
+                            c_CreateRoom.RoomName = $"TestRoom_{rnd.Next()}";
+                            dummySession.Send(c_CreateRoom);
+                        }
+                        else
+                        {
+                            //방 입장
+                            if (dummySession.RoomManager.Rooms.Count > 0)
+                            {
+                                int roomNum = rnd.Next(0, dummySession.RoomManager.Rooms.Count);
+                                var room = dummySession.RoomManager.Rooms.ElementAt(roomNum).Value;
+                                C_EnterRoom c_EnterRoom = new C_EnterRoom();
+                                c_EnterRoom.RoomId = room.RoomId;
+                                dummySession.Send(c_EnterRoom);
+                            }
+                        }
+                        //닉네임 변경
+                        //방 생성(상태 변경 로비 -> 방)
+                        //방이 있다면 방 입장(상태 변경 로비 -> 방)
+                    }
+                    else
+                    {
+                        //채팅
+                        //방 퇴장(상태 변경 방->로비)
+                        //방장이라면 방 삭제(상태 변경 방->로비)
+
+                        // 유저 상태와 현재 방 접속 여부가 불일치하는 경우 서버에 새로운 유저 정보 요청
+                        if (dummySession.RoomManager.CurrentRoom == null)
+                        {
+                            C_UserInfo c_UserInfo = new C_UserInfo();
+                            dummySession.Send(c_UserInfo);
+                            continue;
+                        }
+
+                        var rnd = new Random();
+                        int num = rnd.Next(0, 2);
+                        if (num == 0)
+                        {
+                            //채팅
+                            C_Chat c_Chat = new C_Chat();
+                            c_Chat.Msg = $"Test Message from {dummySession.UserInfo.Nickname}";
+                            dummySession.Send(c_Chat);
+                        }
+                        else
+                        {
+
+                            //방장이라면 방 삭제
+                            if (dummySession.RoomManager.CurrentRoom.RoomMasterUserId == dummySession.UserInfo.UserId)
+                            {
+                                C_DeleteRoom c_DeleteRoom = new C_DeleteRoom();
+                                dummySession.Send(c_DeleteRoom);
+                            }
+                            else
+                            {
+                                //방 퇴장
+                                C_LeaveRoom c_LeaveRoom = new C_LeaveRoom();
+                                dummySession.Send(c_LeaveRoom);
+                            }
+                        }
+                    }
+                }
+            }
+
         }
 
         public static void TestRtt()
@@ -434,6 +543,7 @@ namespace DummyClient
 
     public class TestServerSession : ServerSession
     {
+
         public static int count = 0;
         public string testServerSessionName;
         public long minRttMs = long.MaxValue;
@@ -461,6 +571,12 @@ namespace DummyClient
 
         }
 
+        public new void Send(IMessage message)
+        {
+            Console.WriteLine($"{testServerSessionName}[{message.Descriptor.Name}]");
+            base.Send(message);
+        }
+
         public override void InitViewManager(IViewManager viewManager)
         {
             base.InitViewManager(viewManager);
@@ -481,7 +597,7 @@ namespace DummyClient
             ushort size = BitConverter.ToUInt16(data.Array, 0);
             ushort packetId = BitConverter.ToUInt16(data.Array, 2);
             MsgId msgId = (MsgId)packetId;
-            Console.WriteLine($"[{msgId.ToString()}] size: {size}");
+            Console.WriteLine($"{testServerSessionName}[{msgId.ToString()}] size: {size}");
 
             PacketManager.Instance.InvokePacketHandler(this, data);
 

@@ -10,10 +10,9 @@ public interface IViewManager
     void ShowLobbyUserList(MapField<int, UserInfo> userInfos);
     void ShowLobbyUserList(Dictionary<int, UserInfo> userInfos);
     void ShowChangedNickname(UserInfo userInfo, string newName);
-    void ShowLobbyScreen();
-    void ShowRoomScreen();
     void ShowAddedRoom(RoomInfo roomInfo);
     void ShowAddedUser(int roomId, UserInfo userInfo);
     void ShowRemovedUser(int roomId, UserInfo userInfo);
     void ShowRemovedRoom(int roomId);
+    void ShowChangedScreen(UserState userState);
 }

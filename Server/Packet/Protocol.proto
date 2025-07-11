@@ -29,16 +29,65 @@ enum MsgId {
 	S_ENTER_ROOM_ANY_USER = 20;
 	S_ENTER_LOBBY_ANY_USER = 21;
 	S_LEAVE_ROOM_ANY_USER = 22;
-	S_DELETE_ROOM_IN_LOBBY = 23;
+	S_DELETE_ANY_ROOM_IN_LOBBY = 23;
 	S_LEAVE_LOBBY_ANY_USER = 24;
+	S_USER_INFO = 25;
+	C_USER_INFO = 26;
 	S_TEST_CHAT = 998;
 	C_TEST_CHAT = 999;
+}
+
+enum ErrorCode {
+	Success = 0;
+    UnknownError = 1;
+    InvalidRequest = 2;
+    NotAuthenticated = 3;
+    NotAuthorized = 4;
+
+    // User
+    UserNotFound = 1000;
+    UserAlreadyExists = 1001;
+    NicknameAlreadyTaken = 1002;
+    UserBanned = 1003;
+	InvalidNickname = 1004;
+	NicknameTooLong = 1005;
+	NicknameTooShort = 1006;
+
+    // Room
+    RoomNotFound = 2000;
+    RoomAlreadyExists = 2001;
+    RoomFull = 2002;
+    AlreadyInRoom = 2003;
+    NotInRoom = 2004;
+    RoomLocked = 2005;
+
+    // Chat
+    ChatMuted = 3000;
+    MessageTooLong = 3001;
+    EmptyMessage = 3002;
+    FloodingDetected = 3003;
+
+	// Lobby
+	NotInLobby = 4000;
+
+    // System
+    InternalServerError = 5000;
+    Timeout = 5001;
+    ProtocolViolation = 5002;
+    ServerShuttingDown = 5003;
+}
+
+enum UserState {
+	None = 0;
+    Lobby = 1;
+    Room = 2;
 }
 
 message S_Chat {
 	int32 userId = 1;
 	string msg = 2;
 	google.protobuf.Timestamp timestamp = 3;
+	UserState userState = 4;
 }
 message C_Chat {
 	string msg = 1;
@@ -50,29 +99,32 @@ message C_Ping {
 }
 
 message S_SetNickname {
-	bool success = 1;
+	ErrorCode errorCode = 1;
 	string reason = 2;
 	int32 userId = 3;
 	string nickname = 4;
+	UserState userState = 5;
 }
 message C_SetNickname {
   string nickname = 1;
 }
 
 message S_CreateRoom {
-  bool success = 1;
+  ErrorCode errorCode = 1;
   string reason = 2;
   RoomInfo roomInfo = 3;
+  UserState userState = 4;
 }
 message C_CreateRoom {
   string roomName = 1;
 }
 
 message S_DeleteRoom {
-  bool success = 1;
-  map<int32, RoomInfo> rooms = 2;
-  map<int32, UserInfo> lobbyUserInfos = 3;
-  string reason = 4;
+  ErrorCode errorCode = 1;
+  string reason = 2;
+  map<int32, RoomInfo> rooms = 3;
+  map<int32, UserInfo> lobbyUserInfos = 4;
+  UserState userState = 5;
 }
 message C_DeleteRoom {
 }
@@ -84,9 +136,10 @@ message C_RoomList {
 }
 
 message S_EnterRoom {
-  bool success = 1;
-  RoomInfo roomInfo = 2;
-  string reason = 3;
+  ErrorCode errorCode = 1;
+  string reason = 2;
+  RoomInfo roomInfo = 3;
+  UserState userState = 4;
 }
 message C_EnterRoom {
   int32 roomId = 1;
@@ -101,8 +154,11 @@ message C_UserList {
 }
 
 message S_LeaveRoom {
-  map<int32, UserInfo> userInfos = 1;
-  map<int32, RoomInfo> rooms = 2;
+  ErrorCode errorCode = 1;
+  string reason = 2;
+  map<int32, UserInfo> userInfos = 3;
+  map<int32, RoomInfo> rooms = 4;
+  UserState userState = 5;
 }
 message C_LeaveRoom {
 }
@@ -130,13 +186,22 @@ message S_LeaveRoomAnyUser {
   UserInfo userInfo = 2; 
 }
 
-message S_DeleteRoomInLobby {
+message S_DeleteAnyRoomInLobby {
   int32 roomId = 1;
   repeated UserInfo userInfos = 2; 
 }
 
 message S_LeaveLobbyAnyUser {
   UserInfo userInfo = 1; 
+}
+
+message S_UserInfo {
+	UserInfo userInfo = 1;
+	UserState userState = 2;
+	int32 currentRoomId = 3;
+}
+
+message C_UserInfo {
 }
 
 message S_TestChat {

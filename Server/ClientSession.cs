@@ -11,19 +11,12 @@ using Google.Protobuf.Protocol;
 
 namespace Server
 {
-    public enum State
-    {
-        None = 0,
-        Lobby = 1,
-        Room = 2
-    }
-
     public class ClientSession : PacketSession
     {
         public UserInfo UserInfo { get; set; } = new UserInfo(); // 유저 정보
         public Room Room { get; set; } = null; // 현재 방 정보 (null이면 방에 없음)
 
-        public State CurrentState { get; set; } = State.None; // 현재 상태 (Lobby, Room 등)
+        public UserState CurrentState { get; set; } = UserState.None; // 현재 상태 (Lobby, Room 등)
 
         public DateTime LastRecvDate { get; set; } = DateTime.UtcNow;
         public bool IsPing { get; set; } // 핑 요청 여부
@@ -86,7 +79,7 @@ namespace Server
             }
 
             // 로비에 있는 경우 로비에서 유저 제거
-            if (CurrentState == State.Lobby)
+            if (CurrentState == UserState.Lobby)
             {
                 RoomManager.Instance.LeaveUserFromLobby(UserInfo.UserId);
                 RoomManager.Instance.BroadcastToLobby(new S_LeaveLobbyAnyUser() { UserInfo = UserInfo }); // 로비에 있는 모든 유저에게 알림

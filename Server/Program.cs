@@ -43,7 +43,7 @@ namespace Server
                             {
                                 if (session.UserInfo != null)
                                 {
-                                    Console.WriteLine($"UserId: {session.UserInfo.UserId}, Nickname: {session.UserInfo.Nickname}, CurrentRoom: {session.Room?.roomInfo?.RoomId ?? -1}");
+                                    Console.WriteLine($"UserId: {session.UserInfo.UserId}, Nickname: {session.UserInfo.Nickname}, CurrentRoom: {session.Room?.roomInfo?.RoomId ?? -1}, CurrentState: {session.CurrentState.ToString()}");
                                 }
                             }
                             Console.WriteLine("룸 매니저 로비 유저 목록");

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using DummyClient;
 using Google.Protobuf.Collections;
 using Google.Protobuf.Protocol;
 using static System.Net.Mime.MediaTypeNames;
@@ -11,6 +12,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 public class ConsoleViewManager : IViewManager
 {
+    bool isLobby = true;
     public void ShowRoomList(MapField<int, RoomInfo> roomInfos)
     {
         Console.WriteLine(MethodBase.GetCurrentMethod().Name);
@@ -70,16 +72,31 @@ public class ConsoleViewManager : IViewManager
         Console.WriteLine($"User {userInfo.UserId} changed nickname to {newName}");
     }
 
-    public void ShowLobbyScreen()
+    private void ShowLobbyScreen()
     {
-        
         Console.WriteLine(MethodBase.GetCurrentMethod().Name);
     }
 
-    public void ShowRoomScreen()
+    private void ShowRoomScreen()
     {
-
         Console.WriteLine(MethodBase.GetCurrentMethod().Name);
+    }
+
+    public void ShowChangedScreen(UserState userState)
+    {
+        Console.WriteLine(MethodBase.GetCurrentMethod().Name);
+        if (userState == UserState.Lobby)
+        {
+            ShowLobbyScreen();
+        }
+        else if (userState == UserState.Room)
+        {
+            ShowRoomScreen();
+        }
+        else
+        {
+            Console.WriteLine("Unknown user state.");
+        }
     }
 
     public void ShowAddedRoom(RoomInfo roomInfo)

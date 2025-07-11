@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Google.Protobuf;
+using Google.Protobuf.Collections;
 using Google.Protobuf.Protocol;
 using ServerCore;
 
@@ -35,6 +36,20 @@ namespace Server
             if (rooms.TryGetValue(roomId, out Room room))
                 return room;
             return null;
+        }
+
+        public void GetLobbyUsers(in MapField<int, UserInfo> userInfos)
+        {
+            lock (_lock)
+            {
+                foreach (var userId in userIds)
+                {
+                    if (SessionManager.Instance.clientSessions.TryGetValue(userId, out ClientSession clientSession))
+                    {
+                        userInfos.Add(userId, clientSession.UserInfo);
+                    }
+                }
+            }
         }
 
         public bool RemoveRoom(int roomId, int masterUserId)

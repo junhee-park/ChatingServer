@@ -8,11 +8,6 @@ using Google.Protobuf.Protocol;
 
 public class RoomManager
 {
-    #region Singleton
-    static RoomManager _instance = new RoomManager();
-    public static RoomManager Instance { get { return _instance; } }
-    #endregion
-
     public RoomInfo CurrentRoom { get; set; } = null; // 현재 참여 중인 방 정보
 
     public MapField<int, RoomInfo> Rooms { get; private set; } = new MapField<int, RoomInfo>();
@@ -31,7 +26,7 @@ public class RoomManager
         {
             if (Rooms.TryGetValue(roomId, out RoomInfo room))
             {
-                room.UserInfos.Add(userInfo.UserId, userInfo);
+                room.UserInfos.TryAdd(userInfo.UserId, userInfo);
                 UserInfos.Remove(userInfo.UserId); // 로비에서 제거
             }
         }
@@ -49,7 +44,7 @@ public class RoomManager
     {
         lock (_lock)
         {
-            Rooms.Add(roomInfo.RoomId, roomInfo);
+            Rooms.TryAdd(roomInfo.RoomId, roomInfo);
         }
     }
 
@@ -58,10 +53,23 @@ public class RoomManager
         lock (_lock)
         {
             Rooms.TryGetValue(roomId, out RoomInfo roomInfo);
-            roomInfo.UserInfos.Remove(userInfo.UserId);
-            UserInfos.Add(userInfo.UserId, userInfo); // 유저를 로비로 이동
+            if (roomInfo != null)
+                roomInfo.UserInfos.Remove(userInfo.UserId);
+            UserInfos.TryAdd(userInfo.UserId, userInfo); // 유저를 로비로 이동
         }
     }
+
+    public RoomInfo GetRoomInfo(int roomId)
+    {
+        lock (_lock)
+        {
+            if (Rooms.TryGetValue(roomId, out RoomInfo roomInfo))
+                return roomInfo;
+
+            return null;
+        }
+    }
+
 
     public void LeaveLobby(UserInfo userInfo)
     {

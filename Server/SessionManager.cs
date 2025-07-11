@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -17,7 +18,7 @@ namespace Server
         public static SessionManager Instance { get { return _instance; } }
         #endregion
 
-        public Dictionary<int, ClientSession> clientSessions = new Dictionary<int, ClientSession>();
+        public ConcurrentDictionary<int, ClientSession> clientSessions = new ConcurrentDictionary<int, ClientSession>();
         int incSessionId = 0;
 
         static object _lock = new object();
@@ -28,7 +29,7 @@ namespace Server
             lock (_lock)
             {
                 ClientSession session = new ClientSession(args.AcceptSocket, incSessionId);
-                clientSessions.Add(incSessionId, session);
+                clientSessions.TryAdd(incSessionId, session);
                 session.OnConnect(session.Socket.RemoteEndPoint);
 
                 incSessionId += 1;
@@ -64,15 +65,14 @@ namespace Server
         {
             ClientSession user = (ClientSession)args.UserToken;
             user.Disconnect();
-            clientSessions.Remove(user.UserInfo.UserId);
-
+            clientSessions.TryRemove(new KeyValuePair<int, ClientSession>(user.UserInfo.UserId, user));
         }
 
         public void RemoveSession(ClientSession clientSession)
         {
             lock (_lock)
             {
-                clientSessions.Remove(clientSession.UserInfo.UserId);
+                clientSessions.TryRemove(new KeyValuePair<int, ClientSession>(clientSession.UserInfo.UserId, clientSession));
             }
         }
     }
