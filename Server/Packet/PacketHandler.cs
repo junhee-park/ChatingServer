@@ -11,6 +11,7 @@ using ServerCore;
 using Google.Protobuf.Protocol;
 using Server;
 using Google.Protobuf.WellKnownTypes;
+using Google.Protobuf.Collections;
 
 /// <summary>
 /// 전송된 패킷을 처리하는 클래스.
@@ -82,6 +83,7 @@ public static class PacketHandler
             Console.WriteLine($"[C_SetNicknameHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
             s_SetNickname.ErrorCode = ErrorCode.NotInLobby;
             s_SetNickname.Reason = "You must be in the Lobby to set a nickname.";
+            s_SetNickname.UserState = clientSession.CurrentState;
             clientSession.Send(s_SetNickname);
             return;
         }
@@ -112,9 +114,10 @@ public static class PacketHandler
 
         if (clientSession.CurrentState != UserState.Lobby)
         {
-            Console.WriteLine($"[C_CreateRoomHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
+            Console.WriteLine($"{DateTime.UtcNow} [C_CreateRoomHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
             s_CreateRoom.ErrorCode = ErrorCode.NotInLobby;
             s_CreateRoom.Reason = "You must be in the Lobby to create a room.";
+            s_CreateRoom.UserState = clientSession.CurrentState;
             clientSession.Send(s_CreateRoom);
         }
         else
@@ -142,18 +145,27 @@ public static class PacketHandler
         Room clientSessionCurrentRoom = clientSession.Room;
         if (clientSessionCurrentRoom == null)
         {
-            Console.WriteLine($"[C_DeleteRoomHandler] User {clientSession.UserInfo.UserId} is not in a room.");
+            Console.WriteLine($"{DateTime.UtcNow} [C_DeleteRoomHandler] User {clientSession.UserInfo.UserId} is not in a room.");
             s_DeleteRoom.ErrorCode = ErrorCode.NotInRoom;
             s_DeleteRoom.Reason = "You are not in a room.";
+            s_DeleteRoom.UserState = clientSession.CurrentState;
             clientSession.Send(s_DeleteRoom);
             return;
         }
 
-        foreach (var room in RoomManager.Instance.rooms.Values)
+        lock (RoomManager.Instance._lock)
         {
-            s_DeleteRoom.Rooms.Add(room.roomInfo.RoomId, room.roomInfo);
+            MapField<int, RoomInfo> roomInfos = new MapField<int, RoomInfo>();
+
+            foreach (var room in RoomManager.Instance.rooms.Values)
+            {
+                roomInfos.Add(room.roomInfo.RoomId, room.roomInfo);
+            }
+            s_DeleteRoom.Rooms.MergeFrom(roomInfos); // 현재 존재하는 룸 리스트 전송
         }
-        RoomManager.Instance.GetLobbyUsers(s_DeleteRoom.LobbyUserInfos); // 로비 유저 리스트 가져오기
+        MapField<int, UserInfo> lobbyUserInfos = new MapField<int, UserInfo>();
+        RoomManager.Instance.GetLobbyUsers(lobbyUserInfos); // 로비 유저 리스트 가져오기
+        s_DeleteRoom.LobbyUserInfos.MergeFrom(lobbyUserInfos);
 
         bool success = RoomManager.Instance.RemoveRoom(clientSessionCurrentRoom.roomInfo.RoomId, clientSession.UserInfo.UserId);
         s_DeleteRoom.ErrorCode = success ? ErrorCode.Success : ErrorCode.NotAuthorized;
@@ -184,7 +196,7 @@ public static class PacketHandler
         }
         else
         {
-            Console.WriteLine($"[C_DeleteRoomHandler] User {clientSession.UserInfo.UserId} failed to delete room {clientSessionCurrentRoom.roomInfo.RoomId}.");
+            Console.WriteLine($"{DateTime.UtcNow} [C_DeleteRoomHandler] User {clientSession.UserInfo.UserId} failed to delete room {clientSessionCurrentRoom.roomInfo.RoomId}.");
             s_DeleteRoom.Reason = "Failed to delete room. You must be the room master.";
             clientSession.Send(s_DeleteRoom);
         }
@@ -223,7 +235,7 @@ public static class PacketHandler
         S_EnterRoom s_EnterRoom = new S_EnterRoom();
         if (room == null)
         {
-            Console.WriteLine($"[C_EnterRoomHandler] Room {c_EnterRoomPacket.RoomId} not found.");
+            Console.WriteLine($"{DateTime.UtcNow} [C_EnterRoomHandler] Room {c_EnterRoomPacket.RoomId} not found.");
             s_EnterRoom.ErrorCode = ErrorCode.RoomNotFound;
             s_EnterRoom.Reason = "Room not found.";
             clientSession.Send(s_EnterRoom);
@@ -233,9 +245,10 @@ public static class PacketHandler
         // 룸에 입장할 수 있는 상태인지 확인
         if (clientSession.CurrentState != UserState.Lobby)
         {
-            Console.WriteLine($"[C_EnterRoomHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
+            Console.WriteLine($"{DateTime.UtcNow} [C_EnterRoomHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
             s_EnterRoom.ErrorCode = ErrorCode.NotInLobby;
             s_EnterRoom.Reason = "You must be in the Lobby to enter a room.";
+            s_EnterRoom.UserState = clientSession.CurrentState;
             clientSession.Send(s_EnterRoom);
             return;
         }
@@ -294,7 +307,7 @@ public static class PacketHandler
             }
             else
             {
-                Console.WriteLine($"[C_UserListHandler] User {userId} is not in a room or lobby.");
+                Console.WriteLine($"{DateTime.UtcNow} [C_UserListHandler] User {userId} is not in a room or lobby.");
                 return; // 현재 상태가 Lobby나 Room이 아닐 경우 처리하지 않음
             }
         }
@@ -314,7 +327,7 @@ public static class PacketHandler
         Room room = clientSession.Room; // 현재 방 정보
         if (clientSession.CurrentState != UserState.Room)
         {
-            Console.WriteLine($"[C_LeaveRoomHandler] User {userId} is not in a room.");
+            Console.WriteLine($"{DateTime.UtcNow} [C_LeaveRoomHandler] User {userId} is not in a room.");
             s_LeaveRoom.ErrorCode = ErrorCode.NotInRoom;
             s_LeaveRoom.UserState = clientSession.CurrentState;
             clientSession.Send(s_LeaveRoom);
@@ -325,11 +338,19 @@ public static class PacketHandler
         clientSession.Room = null;
 
         // 퇴장하는 유저에게 방 목록과 로비 유저 리스트 전송
-        foreach (var item in RoomManager.Instance.rooms)
+        MapField<int, RoomInfo> rooms = new MapField<int, RoomInfo>();
+        lock (RoomManager.Instance._lock)
         {
-            s_LeaveRoom.Rooms.Add(item.Key, item.Value.roomInfo);
+            foreach (var item in RoomManager.Instance.rooms)
+            {
+                rooms.Add(item.Key, item.Value.roomInfo);
+            }
         }
-        RoomManager.Instance.GetLobbyUsers(s_LeaveRoom.UserInfos); // 로비 유저 리스트 가져오기
+        s_LeaveRoom.Rooms.MergeFrom(rooms);
+
+        MapField<int, UserInfo> lobbyUserInfos = new MapField<int, UserInfo>();
+        RoomManager.Instance.GetLobbyUsers(lobbyUserInfos); // 로비 유저 리스트 가져오기
+        s_LeaveRoom.UserInfos.MergeFrom(lobbyUserInfos);
         clientSession.Send(s_LeaveRoom);
 
         // 패킷 생성
@@ -396,7 +417,10 @@ public static class PacketHandler
         s_UserInfo.UserInfo = clientSession.UserInfo;
         s_UserInfo.UserState = clientSession.CurrentState;
         if (clientSession.CurrentState == UserState.Room)
-            s_UserInfo.CurrentRoomId = clientSession.Room.roomInfo.RoomId;
+        {
+            s_UserInfo.RoomInfo = new RoomInfo();
+            s_UserInfo.RoomInfo.MergeFrom(clientSession.Room.roomInfo);
+        }
 
         clientSession.Send(s_UserInfo);
     }

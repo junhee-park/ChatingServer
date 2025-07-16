@@ -378,7 +378,9 @@ public static class PacketHandler
         serverSession.CurrentState = s_UserInfo.UserState;
         if (serverSession.CurrentState == UserState.Room && serverSession.RoomManager.CurrentRoom == null)
         {
-            serverSession.RoomManager.CurrentRoom = serverSession.RoomManager.GetRoomInfo(s_UserInfo.CurrentRoomId);
+            serverSession.RoomManager.CurrentRoom = s_UserInfo.RoomInfo;
+            serverSession.RoomManager.DeleteRoom(s_UserInfo.RoomInfo.RoomId);
+            serverSession.RoomManager.CreateRoom(s_UserInfo.RoomInfo);
         }
     }
 }

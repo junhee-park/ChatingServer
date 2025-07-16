@@ -49,6 +49,7 @@ namespace Server
         /// <param name="message"></param>
         public void Broadcast(IMessage message)
         {
+            // TODO: 강제 종료로 인한 roomInfo.UserInfos의 유저 삭제대비 필요
             lock (_lock)
             {
                 if (roomInfo.UserInfos.Count == 0)

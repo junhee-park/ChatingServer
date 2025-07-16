@@ -22,7 +22,7 @@ namespace Server
         public ConcurrentDictionary<int, Room> rooms = new ConcurrentDictionary<int, Room>();
         public HashSet<int> userIds = new HashSet<int>(); // 로비에 존재하는 유저의 id목록
 
-        object _lock = new object();
+        public object _lock = new object();
 
         public Room CreateRoom(string roomName, int roomMasterId)
         {

@@ -25,6 +25,8 @@ public class ServerSession : PacketSession
         set
         {
             _currentState = value;
+            if (_currentState == UserState.None)
+                throw new InvalidOperationException("UserState cannot be None.");
             ViewManager.ShowChangedScreen(_currentState);
         }
     }

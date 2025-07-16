@@ -19,7 +19,7 @@ namespace DummyClient
         static object _lock = new object();
 
         // testConnection * (1000 / testSendMs) = tps
-        static int testConnection = 10;
+        static int testConnection = 2;
         static int testSendMs = 1000;
 
 
@@ -573,7 +573,7 @@ namespace DummyClient
 
         public new void Send(IMessage message)
         {
-            Console.WriteLine($"{testServerSessionName}[{message.Descriptor.Name}]");
+            Console.WriteLine($"{DateTime.UtcNow} {testServerSessionName}[{message.Descriptor.Name}]");
             base.Send(message);
         }
 
@@ -597,7 +597,7 @@ namespace DummyClient
             ushort size = BitConverter.ToUInt16(data.Array, 0);
             ushort packetId = BitConverter.ToUInt16(data.Array, 2);
             MsgId msgId = (MsgId)packetId;
-            Console.WriteLine($"{testServerSessionName}[{msgId.ToString()}] size: {size}");
+            Console.WriteLine($"{DateTime.UtcNow} {testServerSessionName}[{msgId.ToString()}] size: {size}");
 
             PacketManager.Instance.InvokePacketHandler(this, data);
 
