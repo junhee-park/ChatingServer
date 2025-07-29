@@ -28,6 +28,10 @@ namespace Server
             //thread.Start();
             //thread.Name = "HeartBeat Thread";
 
+            Thread thread = new Thread(StartRoomManagerJobExecution);
+            thread.Start();
+            thread.Name = "RoomManager Thread";
+
             while (true)
             {
                 // 서버가 실행 중일 때 콘솔에서 입력을 받기 위한 부분
@@ -75,6 +79,15 @@ namespace Server
                             break;
                         }
                 }
+            }
+        }
+
+        static void StartRoomManagerJobExecution()
+        {
+            while (true)
+            {
+                // 룸 매니저 작업 실행
+                RoomManager.Instance.Execute();
             }
         }
 

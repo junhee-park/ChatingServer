@@ -19,7 +19,7 @@ namespace DummyClient
         static object _lock = new object();
 
         // testConnection * (1000 / testSendMs) = tps
-        static int testConnection = 2;
+        static int testConnection = 50;
         static int testSendMs = 1000;
 
 
@@ -427,14 +427,14 @@ namespace DummyClient
                         else
                         {
                             //방 입장
-                            if (dummySession.RoomManager.Rooms.Count > 0)
+                            var room = dummySession.RoomManager.GetRandomRoomInfo();
+                            if (room != null)
                             {
-                                int roomNum = rnd.Next(0, dummySession.RoomManager.Rooms.Count);
-                                var room = dummySession.RoomManager.Rooms.ElementAt(roomNum).Value;
                                 C_EnterRoom c_EnterRoom = new C_EnterRoom();
                                 c_EnterRoom.RoomId = room.RoomId;
                                 dummySession.Send(c_EnterRoom);
                             }
+                            
                         }
                         //닉네임 변경
                         //방 생성(상태 변경 로비 -> 방)

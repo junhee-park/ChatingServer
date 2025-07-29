@@ -196,6 +196,12 @@ public static class PacketHandler
             serverSession.CurrentState = s_EnterRoomPacket.UserState; // 유저 상태 갱신
             return;
         }
+        else if (s_EnterRoomPacket.ErrorCode == ErrorCode.RoomNotFound)
+        {
+            // 입장한 방이 삭제된 경우
+            serverSession.ViewManager.ShowRemovedRoom(s_EnterRoomPacket.RoomInfo.RoomId);
+            return;
+        }
         else if (s_EnterRoomPacket.ErrorCode != ErrorCode.Success)
         {
             Console.WriteLine(s_EnterRoomPacket.Reason);
@@ -269,6 +275,11 @@ public static class PacketHandler
         {
             Console.WriteLine(s_LeaveRoomPacket.Reason);
             serverSession.CurrentState = s_LeaveRoomPacket.UserState; // 유저 상태 갱신
+            return;
+        }
+        else if (s_LeaveRoomPacket.ErrorCode != ErrorCode.Success)
+        {
+            Console.WriteLine(s_LeaveRoomPacket.Reason);
             return;
         }
 

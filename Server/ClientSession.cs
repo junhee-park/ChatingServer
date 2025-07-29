@@ -60,32 +60,8 @@ namespace Server
         public override void OnDisconnect(EndPoint endPoint)
         {
             Console.WriteLine($"OnDisconnect User_{UserInfo.UserId} {endPoint.ToString()}");
-            // 방에 참여 중인 경우 방에서 유저 제거
-            if (Room != null)
-            {
-                if (Room.roomInfo.RoomMasterUserId == UserInfo.UserId)
-                {
-                    // 방장인 경우
-                    Room.LeaveUser(UserInfo.UserId); // 방장 유저 제거
-                    PacketHandler.C_DeleteRoomHandler(this, new C_DeleteRoom());
-                }
-                else
-                {
-                    // 일반 유저인 경우
-                    Room.LeaveUser(UserInfo.UserId);
-                    Room.Broadcast(new S_LeaveRoomAnyUser() { RoomId = Room.roomInfo.RoomId, UserInfo = UserInfo }); // 방에 있는 모든 유저에게 알림
-                    Room = null; // 방에서 나감
-                }
-            }
-
-            // 로비에 있는 경우 로비에서 유저 제거
-            if (CurrentState == UserState.Lobby)
-            {
-                RoomManager.Instance.LeaveUserFromLobby(UserInfo.UserId);
-                RoomManager.Instance.BroadcastToLobby(new S_LeaveLobbyAnyUser() { UserInfo = UserInfo }); // 로비에 있는 모든 유저에게 알림
-            }
-            // 세션 종료
-            SessionManager.Instance.RemoveSession(this);
+            
+            RoomManager.Instance.Enqueue(RoomManager.Instance.DisconnectUser, this);
         }
     }
 }

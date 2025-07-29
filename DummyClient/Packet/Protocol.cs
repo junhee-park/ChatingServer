@@ -104,7 +104,7 @@ namespace Google.Protobuf.Protocol {
             "RUFWRV9ST09NX0FOWV9VU0VSEBYSHgoaU19ERUxFVEVfQU5ZX1JPT01fSU5f",
             "TE9CQlkQFxIaChZTX0xFQVZFX0xPQkJZX0FOWV9VU0VSEBgSDwoLU19VU0VS",
             "X0lORk8QGRIPCgtDX1VTRVJfSU5GTxAaEhAKC1NfVEVTVF9DSEFUEOYHEhAK",
-            "C0NfVEVTVF9DSEFUEOcHKqkECglFcnJvckNvZGUSCwoHU3VjY2VzcxAAEhAK",
+            "C0NfVEVTVF9DSEFUEOcHKsUECglFcnJvckNvZGUSCwoHU3VjY2VzcxAAEhAK",
             "DFVua25vd25FcnJvchABEhIKDkludmFsaWRSZXF1ZXN0EAISFAoQTm90QXV0",
             "aGVudGljYXRlZBADEhEKDU5vdEF1dGhvcml6ZWQQBBIRCgxVc2VyTm90Rm91",
             "bmQQ6AcSFgoRVXNlckFscmVhZHlFeGlzdHMQ6QcSGQoUTmlja25hbWVBbHJl",
@@ -112,13 +112,14 @@ namespace Google.Protobuf.Protocol {
             "bWUQ7AcSFAoPTmlja25hbWVUb29Mb25nEO0HEhUKEE5pY2tuYW1lVG9vU2hv",
             "cnQQ7gcSEQoMUm9vbU5vdEZvdW5kENAPEhYKEVJvb21BbHJlYWR5RXhpc3Rz",
             "ENEPEg0KCFJvb21GdWxsENIPEhIKDUFscmVhZHlJblJvb20Q0w8SDgoJTm90",
-            "SW5Sb29tENQPEg8KClJvb21Mb2NrZWQQ1Q8SDgoJQ2hhdE11dGVkELgXEhMK",
-            "Dk1lc3NhZ2VUb29Mb25nELkXEhEKDEVtcHR5TWVzc2FnZRC6FxIVChBGbG9v",
-            "ZGluZ0RldGVjdGVkELsXEg8KCk5vdEluTG9iYnkQoB8SGAoTSW50ZXJuYWxT",
-            "ZXJ2ZXJFcnJvchCIJxIMCgdUaW1lb3V0EIknEhYKEVByb3RvY29sVmlvbGF0",
-            "aW9uEIonEhcKElNlcnZlclNodXR0aW5nRG93bhCLJyoqCglVc2VyU3RhdGUS",
-            "CAoETm9uZRAAEgkKBUxvYmJ5EAESCAoEUm9vbRACQhuqAhhHb29nbGUuUHJv",
-            "dG9idWYuUHJvdG9jb2xiBnByb3RvMw=="));
+            "SW5Sb29tENQPEg8KClJvb21Mb2NrZWQQ1Q8SGgoVUm9vbU1hc3RlckNhbm5v",
+            "dExlYXZlENYPEg4KCUNoYXRNdXRlZBC4FxITCg5NZXNzYWdlVG9vTG9uZxC5",
+            "FxIRCgxFbXB0eU1lc3NhZ2UQuhcSFQoQRmxvb2RpbmdEZXRlY3RlZBC7FxIP",
+            "CgpOb3RJbkxvYmJ5EKAfEhgKE0ludGVybmFsU2VydmVyRXJyb3IQiCcSDAoH",
+            "VGltZW91dBCJJxIWChFQcm90b2NvbFZpb2xhdGlvbhCKJxIXChJTZXJ2ZXJT",
+            "aHV0dGluZ0Rvd24QiycqKgoJVXNlclN0YXRlEggKBE5vbmUQABIJCgVMb2Ji",
+            "eRABEggKBFJvb20QAkIbqgIYR29vZ2xlLlByb3RvYnVmLlByb3RvY29sYgZw",
+            "cm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.Protocol.MsgId), typeof(global::Google.Protobuf.Protocol.ErrorCode), typeof(global::Google.Protobuf.Protocol.UserState), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -216,6 +217,7 @@ namespace Google.Protobuf.Protocol {
     [pbr::OriginalName("AlreadyInRoom")] AlreadyInRoom = 2003,
     [pbr::OriginalName("NotInRoom")] NotInRoom = 2004,
     [pbr::OriginalName("RoomLocked")] RoomLocked = 2005,
+    [pbr::OriginalName("RoomMasterCannotLeave")] RoomMasterCannotLeave = 2006,
     /// <summary>
     /// Chat
     /// </summary>

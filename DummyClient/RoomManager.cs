@@ -70,6 +70,19 @@ public class RoomManager
         }
     }
 
+    public RoomInfo GetRandomRoomInfo()
+    {
+        lock (_lock)
+        {
+            if (Rooms.Count == 0)
+                return null;
+            // 랜덤으로 방을 선택
+            Random random = new Random();
+            int randomIndex = random.Next(Rooms.Count);
+            return Rooms.ElementAt(randomIndex).Value;
+        }
+    }
+
 
     public void LeaveLobby(UserInfo userInfo)
     {
