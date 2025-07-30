@@ -12,8 +12,6 @@ using System.Globalization;
 public class ServerSession : PacketSession
 {
     public UserInfo UserInfo { get; set; } = new UserInfo(); // 유저 정보
-    public string TempNickname { get; set; } = string.Empty; // 유저 이름 변경을 위한 임시 이름
-
     public IViewManager ViewManager { get; set; } // 뷰 매니저
 
     public RoomManager RoomManager { get; set; } = new RoomManager(); // 방 관리

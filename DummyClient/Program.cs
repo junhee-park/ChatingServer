@@ -69,7 +69,6 @@ namespace DummyClient
             C_SetNickname c_SetNickname = new C_SetNickname();
             Console.Write("Enter your nickname:");
             string nickname = Console.ReadLine();
-            testServerSession.TempNickname = nickname;
             c_SetNickname.Nickname = nickname;
 
             // 테스트 로그
@@ -77,7 +76,6 @@ namespace DummyClient
             testServerSession.testLog = () =>
             {
 
-                Console.WriteLine($"{temp} -> {testServerSession.TempNickname}");
 
             };
 
@@ -412,9 +410,8 @@ namespace DummyClient
                         if (num == 0)
                         {
                             //닉네임 변경
-                            dummySession.TempNickname = $"User_{rnd.Next()}";
                             C_SetNickname c_SetNickname = new C_SetNickname();
-                            c_SetNickname.Nickname = dummySession.TempNickname;
+                            c_SetNickname.Nickname = $"User_{rnd.Next()}";
                             dummySession.Send(c_SetNickname);
                         }
                         else if (num == 1)
