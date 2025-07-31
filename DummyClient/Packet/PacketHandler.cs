@@ -83,11 +83,15 @@ public static class PacketHandler
             return;
         }
 
-        // 없으면 다른 곳으로 이동했다는 의미이므로 갱신 안함
-        if (serverSession.RoomManager.UserInfos.TryGetValue(s_SetNicknamePacket.UserId, out UserInfo userInfo))
+        // 없으면 다른 곳으로 이동했다는 의미이므로 갱신 안하고 본인일 경우 상관 없이 갱신 진행
+        if (serverSession.UserInfo.UserId == s_SetNicknamePacket.UserId)
+        {
+            serverSession.UserInfo.Nickname = s_SetNicknamePacket.Nickname;
+            serverSession.ViewManager.ShowChangedNickname(serverSession.UserInfo, s_SetNicknamePacket.Nickname);
+        }
+        else if (serverSession.RoomManager.UserInfos.TryGetValue(s_SetNicknamePacket.UserId, out UserInfo userInfo))
         {
             userInfo.Nickname = s_SetNicknamePacket.Nickname;
-
             serverSession.ViewManager.ShowChangedNickname(userInfo, s_SetNicknamePacket.Nickname);
         }
     }
