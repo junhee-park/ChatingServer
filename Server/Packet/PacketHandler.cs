@@ -210,15 +210,6 @@ public static class PacketHandler
     {
         ClientSession clientSession = session as ClientSession;
 
-        S_UserInfo s_UserInfo = new S_UserInfo();
-        s_UserInfo.UserInfo = clientSession.UserInfo;
-        s_UserInfo.UserState = clientSession.CurrentState;
-        if (clientSession.CurrentState == UserState.Room)
-        {
-            s_UserInfo.RoomInfo = new RoomInfo();
-            s_UserInfo.RoomInfo.MergeFrom(clientSession.Room.roomInfo);
-        }
-
-        clientSession.Send(s_UserInfo);
+        RoomManager.Instance.Enqueue(RoomManager.Instance.GetUserInfo, clientSession);
     }
 }

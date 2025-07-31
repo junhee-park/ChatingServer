@@ -345,6 +345,20 @@ namespace Server
             BroadcastToLobby(s_SetNickname);
         }
 
+        public void GetUserInfo(ClientSession clientSession)
+        {
+            S_UserInfo s_UserInfo = new S_UserInfo();
+            s_UserInfo.UserInfo = clientSession.UserInfo;
+            s_UserInfo.UserState = clientSession.CurrentState;
+            if (clientSession.CurrentState == UserState.Room)
+            {
+                s_UserInfo.RoomInfo = new RoomInfo();
+                s_UserInfo.RoomInfo.MergeFrom(clientSession.Room.roomInfo);
+            }
+
+            clientSession.Send(s_UserInfo);
+        }
+
         public void DisconnectUser(ClientSession clientSession)
         {
             // 방에 참여 중인 경우 방에서 유저 제거
