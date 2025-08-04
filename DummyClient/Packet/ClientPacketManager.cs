@@ -35,20 +35,26 @@ public class PacketManager
         _makePacket.Add((ushort)MsgId.SLeaveRoom, MakePacket<S_LeaveRoom>);
         _handlers.Add((ushort)MsgId.SEnterLobby, PacketHandler.S_EnterLobbyHandler);
         _makePacket.Add((ushort)MsgId.SEnterLobby, MakePacket<S_EnterLobby>);
-        _handlers.Add((ushort)MsgId.SEnterRoomAnyUser, PacketHandler.S_EnterRoomAnyUserHandler);
-        _makePacket.Add((ushort)MsgId.SEnterRoomAnyUser, MakePacket<S_EnterRoomAnyUser>);
-        _handlers.Add((ushort)MsgId.SEnterLobbyAnyUser, PacketHandler.S_EnterLobbyAnyUserHandler);
-        _makePacket.Add((ushort)MsgId.SEnterLobbyAnyUser, MakePacket<S_EnterLobbyAnyUser>);
-        _handlers.Add((ushort)MsgId.SLeaveRoomAnyUser, PacketHandler.S_LeaveRoomAnyUserHandler);
-        _makePacket.Add((ushort)MsgId.SLeaveRoomAnyUser, MakePacket<S_LeaveRoomAnyUser>);
-        _handlers.Add((ushort)MsgId.SDeleteAnyRoomInLobby, PacketHandler.S_DeleteAnyRoomInLobbyHandler);
-        _makePacket.Add((ushort)MsgId.SDeleteAnyRoomInLobby, MakePacket<S_DeleteAnyRoomInLobby>);
-        _handlers.Add((ushort)MsgId.SLeaveLobbyAnyUser, PacketHandler.S_LeaveLobbyAnyUserHandler);
-        _makePacket.Add((ushort)MsgId.SLeaveLobbyAnyUser, MakePacket<S_LeaveLobbyAnyUser>);
+        _handlers.Add((ushort)MsgId.SEnterRoomAnyUserBc, PacketHandler.S_EnterRoomAnyUserBcHandler);
+        _makePacket.Add((ushort)MsgId.SEnterRoomAnyUserBc, MakePacket<S_EnterRoomAnyUserBc>);
+        _handlers.Add((ushort)MsgId.SEnterLobbyAnyUserBc, PacketHandler.S_EnterLobbyAnyUserBcHandler);
+        _makePacket.Add((ushort)MsgId.SEnterLobbyAnyUserBc, MakePacket<S_EnterLobbyAnyUserBc>);
+        _handlers.Add((ushort)MsgId.SLeaveRoomAnyUserBc, PacketHandler.S_LeaveRoomAnyUserBcHandler);
+        _makePacket.Add((ushort)MsgId.SLeaveRoomAnyUserBc, MakePacket<S_LeaveRoomAnyUserBc>);
+        _handlers.Add((ushort)MsgId.SDeleteAnyRoomInLobbyBc, PacketHandler.S_DeleteAnyRoomInLobbyBcHandler);
+        _makePacket.Add((ushort)MsgId.SDeleteAnyRoomInLobbyBc, MakePacket<S_DeleteAnyRoomInLobbyBc>);
+        _handlers.Add((ushort)MsgId.SLeaveLobbyAnyUserBc, PacketHandler.S_LeaveLobbyAnyUserBcHandler);
+        _makePacket.Add((ushort)MsgId.SLeaveLobbyAnyUserBc, MakePacket<S_LeaveLobbyAnyUserBc>);
         _handlers.Add((ushort)MsgId.SUserInfo, PacketHandler.S_UserInfoHandler);
         _makePacket.Add((ushort)MsgId.SUserInfo, MakePacket<S_UserInfo>);
-        _handlers.Add((ushort)MsgId.STestChat, PacketHandler.S_TestChatHandler);
-        _makePacket.Add((ushort)MsgId.STestChat, MakePacket<S_TestChat>);
+        _handlers.Add((ushort)MsgId.SSetNicknameBc, PacketHandler.S_SetNicknameBcHandler);
+        _makePacket.Add((ushort)MsgId.SSetNicknameBc, MakePacket<S_SetNicknameBc>);
+        _handlers.Add((ushort)MsgId.SCreateRoomBc, PacketHandler.S_CreateRoomBcHandler);
+        _makePacket.Add((ushort)MsgId.SCreateRoomBc, MakePacket<S_CreateRoomBc>);
+        _handlers.Add((ushort)MsgId.SChatBc, PacketHandler.S_ChatBcHandler);
+        _makePacket.Add((ushort)MsgId.SChatBc, MakePacket<S_ChatBc>);
+        _handlers.Add((ushort)MsgId.SDeleteRoomBc, PacketHandler.S_DeleteRoomBcHandler);
+        _makePacket.Add((ushort)MsgId.SDeleteRoomBc, MakePacket<S_DeleteRoomBc>);
 
     }
 

@@ -37,8 +37,6 @@ public class PacketManager
         _makePacket.Add((ushort)MsgId.CEnterLobby, MakePacket<C_EnterLobby>);
         _handlers.Add((ushort)MsgId.CUserInfo, PacketHandler.C_UserInfoHandler);
         _makePacket.Add((ushort)MsgId.CUserInfo, MakePacket<C_UserInfo>);
-        _handlers.Add((ushort)MsgId.CTestChat, PacketHandler.C_TestChatHandler);
-        _makePacket.Add((ushort)MsgId.CTestChat, MakePacket<C_TestChat>);
 
     }
 

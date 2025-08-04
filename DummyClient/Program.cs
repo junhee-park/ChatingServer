@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using Google.Protobuf.WellKnownTypes;
@@ -19,7 +20,7 @@ namespace DummyClient
         static object _lock = new object();
 
         // testConnection * (1000 / testSendMs) = tps
-        static int testConnection = 50;
+        static int testConnection = 10;
         static int testSendMs = 1000;
 
 
@@ -366,12 +367,6 @@ namespace DummyClient
                             // Alternatively, you can use Environment.Exit(0) to exit the application immediately.
                             return;
                         }
-                    case { Key: ConsoleKey.Spacebar }:
-                        {
-                            Console.WriteLine("\nSpacebar Key Pressed. Sending Test Messages...");
-                            TestBoradcast();
-                            break;
-                        }
                     default:
                         {
                             Console.WriteLine("\nPress Spacebar to send test messages or Escape to exit.");
@@ -515,27 +510,10 @@ namespace DummyClient
                     break;
                 }
 
-                TestBoradcast();
                 Thread.Sleep(testSendMs);
             }
         }
 
-        public static void TestBoradcast()
-        {
-            C_TestChat c_Test_Chat = new C_TestChat();
-            c_Test_Chat.Chat = new C_Chat(); ;
-            c_Test_Chat.Chat.Msg = $"Test Message~~~~~~~";
-
-            for (int i = 0; i < sessions.Count; i++)
-            {
-                TestServerSession session = sessions[i] as TestServerSession;
-
-                c_Test_Chat.TickCount = DateTime.UtcNow.Ticks;
-                //c_Chat.TickCount = Environment.TickCount64;
-
-                session.Send(c_Test_Chat);
-            }
-        }
     }
 
     public class TestServerSession : ServerSession
@@ -547,26 +525,15 @@ namespace DummyClient
         public long maxRttMs = 0;
         public List<long> rtts = new List<long>();
 
+        StringBuilder testRoomIdlogs = new StringBuilder();
+        object testRoomIdlogsLock = new object();
+
         public Action testLog;
         public TestServerSession(Socket socket) : base(socket)
         {
             testServerSessionName = $"TestSession_{Interlocked.Increment(ref count)}";
         }
 
-        public void TestCompareRtt(S_TestChat s_ChatPacket)
-        {
-            long rttMs = DateTime.UtcNow.Ticks - s_ChatPacket.TickCount;
-            //long rttMs = Environment.TickCount64 - s_ChatPacket.TickCount;
-            if (rttMs < minRttMs)
-                minRttMs = rttMs;
-            if (rttMs > maxRttMs)
-                maxRttMs = rttMs;
-            rtts.Add(rttMs);
-
-            if (s_ChatPacket.Chat.UserId == 0)
-                Console.WriteLine($"[{testServerSessionName} -> User_{s_ChatPacket.Chat.UserId}]: {s_ChatPacket.Chat.Msg}");
-
-        }
 
         public new void Send(IMessage message)
         {
@@ -598,7 +565,66 @@ namespace DummyClient
 
             PacketManager.Instance.InvokePacketHandler(this, data);
 
-            testLog?.Invoke();
+            if (msgId == MsgId.SEnterRoom)
+            {
+                ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
+                var s_EnterRoom = PacketManager.Instance.MakePacket<S_EnterRoom>(d);
+                if (s_EnterRoom.ErrorCode == ErrorCode.Success)
+                {
+                    lock (testRoomIdlogsLock)
+                    {
+                        testRoomIdlogs.AppendLine($"{MsgId.SEnterRoom.ToString()} {s_EnterRoom.RoomInfo.RoomId} {CurrentState.ToString()} {RoomManager.CurrentRoom.RoomId} {RoomManager.CurrentRoom.RoomMasterUserId}");
+                    }
+                    
+                }
+            }
+            else if (msgId == MsgId.SCreateRoom)
+            {
+                ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
+                var s_packet = PacketManager.Instance.MakePacket<S_CreateRoom>(d);
+                if (s_packet.ErrorCode == ErrorCode.Success)
+                {
+                    lock (testRoomIdlogsLock)
+                    {                        
+                        testRoomIdlogs.AppendLine($"{MsgId.SCreateRoom.ToString()} {s_packet.RoomInfo.RoomId} {CurrentState.ToString()} {RoomManager.CurrentRoom?.RoomId} {RoomManager.CurrentRoom?.RoomMasterUserId}");
+                    }
+                }
+            }
+            else if (msgId == MsgId.SDeleteRoom)
+            {
+                ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
+                var s_packet = PacketManager.Instance.MakePacket<S_DeleteRoom>(d);
+                if (s_packet.ErrorCode == ErrorCode.Success)
+                {
+                    lock (testRoomIdlogsLock)
+                    {
+                        testRoomIdlogs.AppendLine($"{MsgId.SDeleteRoom.ToString()} {CurrentState.ToString()}");
+                    }
+                }
+            }
+            else if (msgId == MsgId.SLeaveRoom)
+            {
+                ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
+                var s_packet = PacketManager.Instance.MakePacket<S_LeaveRoom>(d);
+                if (s_packet.ErrorCode == ErrorCode.Success)
+                {
+                    lock (testRoomIdlogsLock)
+                    {
+                        testRoomIdlogs.AppendLine($"{MsgId.SLeaveRoom.ToString()} {CurrentState.ToString()}");
+                    }
+                }
+            }
+            else if (msgId == MsgId.SUserInfo)
+            {
+                ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
+                var s_packet = PacketManager.Instance.MakePacket<S_UserInfo>(d);
+                lock (testRoomIdlogsLock)
+                {
+                    testRoomIdlogs.AppendLine($"{MsgId.SUserInfo.ToString()} RoomId: {s_packet.RoomInfo?.RoomId}, State: {s_packet.UserState}, RoomMasterId: {s_packet.RoomInfo?.RoomMasterUserId}");
+                }
+            }
+
+                testLog?.Invoke();
         }
 
         public override void OnSend(int bytesTransferred)

@@ -31,7 +31,7 @@ public class ConsoleViewManager : IViewManager
         Console.WriteLine(text);
     }
 
-    public void ShowText(S_Chat s_Chat)
+    public void ShowText(S_ChatBc s_Chat)
     {
         throw new NotImplementedException();
     }

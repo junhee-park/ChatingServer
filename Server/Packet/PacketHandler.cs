@@ -27,22 +27,29 @@ public static class PacketHandler
         // 유저 아이디 추출
         int userId = clientSession.UserInfo.UserId;
 
-        // 패킷 생성
         S_Chat s_Chat = new S_Chat();
-        s_Chat.UserId = userId;
-        s_Chat.Msg = c_ChatPacket.Msg;
-        s_Chat.Timestamp = Timestamp.FromDateTime(DateTime.UtcNow);
-
-        // 채팅 메시지를 룸에 있는 모든 유저에게 전송
-        if (clientSession.CurrentState == UserState.Room && clientSession.Room != null)
-        {
-            clientSession.Room.Broadcast(s_Chat);
-        }
-        else
+        s_Chat.UserState = clientSession.CurrentState;
+        if (clientSession.CurrentState != UserState.Room)
         {
             Console.WriteLine($"[C_ChatHandler] User {userId} is not in a room.");
-
+            s_Chat.ErrorCode = ErrorCode.NotInRoom; // 현재 상태가 Room이 아닐 경우 에러 코드 설정
+            s_Chat.Reason = "You are not in a room.";
+            clientSession.Send(s_Chat);
+            return; // 현재 상태가 Room이 아닐 경우 처리하지 않음
         }
+        
+        s_Chat.Reason = "Chat message sent successfully.";
+        s_Chat.ErrorCode = ErrorCode.Success;
+
+        // 패킷 생성
+        S_ChatBc s_ChatBc = new S_ChatBc();
+        s_ChatBc.UserId = userId;
+        s_ChatBc.Nickname = clientSession.UserInfo.Nickname;
+        s_ChatBc.Msg = c_ChatPacket.Msg;
+        s_ChatBc.Timestamp = Timestamp.FromDateTime(DateTime.UtcNow);
+
+        clientSession.Send(s_Chat);
+        clientSession.Room.Broadcast(s_ChatBc);
     }
 
     public static void C_PingHandler(Session session, IMessage packet)
@@ -51,22 +58,6 @@ public static class PacketHandler
         C_Ping c_PingPacket = packet as C_Ping;
 
         clientSession.IsPing = false; // 핑 메시지를 받았음을 표시
-    }
-
-    public static void C_TestChatHandler(Session session, IMessage packet)
-    {
-        ClientSession clientSession = session as ClientSession;
-        C_TestChat c_TestChatPacket = packet as C_TestChat;
-        // 유저 아이디 추출
-        int userId = clientSession.UserInfo.UserId;
-        // 패킷 생성
-        S_TestChat s_TestChat = new S_TestChat();
-        S_Chat s_chat = new S_Chat();
-        s_chat.UserId = userId;
-        s_chat.Msg = c_TestChatPacket.Chat.Msg;
-        s_TestChat.Chat = s_chat;
-        s_TestChat.TickCount = c_TestChatPacket.TickCount;
-        SessionManager.Instance.Boardcast(s_TestChat);
     }
 
     public static void C_SetNicknameHandler(Session session, IMessage packet)

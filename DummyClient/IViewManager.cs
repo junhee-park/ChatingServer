@@ -4,7 +4,7 @@ using Google.Protobuf.Protocol;
 public interface IViewManager
 {
     void ShowText(string text);
-    void ShowText(S_Chat s_Chat);
+    void ShowText(S_ChatBc s_Chat);
     void ShowRoomList(MapField<int, RoomInfo> roomInfos);
     void ShowRoomUserList(MapField<int, UserInfo> userInfos);
     void ShowLobbyUserList(MapField<int, UserInfo> userInfos);

@@ -49,16 +49,22 @@ namespace Server
             }
             else
             {
-                Room room = RoomManager.Instance.CreateRoom(c_CreateRoomPacket.RoomName, userId);
+                Room room = CreateRoom(c_CreateRoomPacket.RoomName, userId);
                 room.AddUser(clientSession);
                 RoomInfo roomInfo = room.roomInfo;
                 s_CreateRoom.RoomInfo = roomInfo;
                 s_CreateRoom.ErrorCode = ErrorCode.Success;
-                BroadcastToLobby(s_CreateRoom);
 
                 LeaveUserFromLobby(userId); // 로비에서 유저 제거
                 clientSession.CurrentState = UserState.Room;
                 clientSession.Room = room; // 현재 방 정보 설정
+                clientSession.Send(s_CreateRoom);
+
+                S_CreateRoomBc s_CreateRoomBC = new S_CreateRoomBc();
+                s_CreateRoomBC.RoomInfo = roomInfo;
+
+                BroadcastToLobby(s_CreateRoom);
+
             }
         }
 
@@ -97,6 +103,7 @@ namespace Server
                 clientSession.Send(s_EnterRoom);
                 return;
             }
+
             room.AddUser(clientSession);
             clientSession.CurrentState = UserState.Room;
             clientSession.Room = room; // 현재 방 정보 설정
@@ -104,12 +111,11 @@ namespace Server
             s_EnterRoom.ErrorCode = ErrorCode.Success;
             s_EnterRoom.RoomInfo = room.roomInfo;
 
-
             // 룸 입장 응답 패킷 전송
             clientSession.Send(s_EnterRoom);
 
             // 룸에 있는 모든 유저에게 입장 알림 패킷 전송
-            S_EnterRoomAnyUser s_EnterRoomAnyUser = new S_EnterRoomAnyUser();
+            S_EnterRoomAnyUserBc s_EnterRoomAnyUser = new S_EnterRoomAnyUserBc();
             s_EnterRoomAnyUser.RoomId = room.roomInfo.RoomId;
             s_EnterRoomAnyUser.UserInfo = clientSession.UserInfo;
             room.Broadcast(s_EnterRoomAnyUser);
@@ -165,15 +171,16 @@ namespace Server
                 return;
             }
 
+            S_DeleteRoomBc s_DeleteRoomBC = new S_DeleteRoomBc();
             foreach (var room in rooms.Values)
             {
-                s_DeleteRoom.Rooms.Add(room.roomInfo.RoomId, room.roomInfo);
+                s_DeleteRoomBC.Rooms.Add(room.roomInfo.RoomId, room.roomInfo);
             }
             foreach (var userId in userIds)
             {
                 if (SessionManager.Instance.clientSessions.TryGetValue(userId, out ClientSession clientSessionInLobby))
                 {
-                    s_DeleteRoom.LobbyUserInfos.Add(userId, clientSessionInLobby.UserInfo);
+                    s_DeleteRoomBC.LobbyUserInfos.Add(userId, clientSessionInLobby.UserInfo);
                 }
             }
 
@@ -181,9 +188,7 @@ namespace Server
             s_DeleteRoom.ErrorCode = success ? ErrorCode.Success : ErrorCode.NotAuthorized;
             if (success)
             {
-                clientSession.Room.Broadcast(s_DeleteRoom);
-
-                S_DeleteAnyRoomInLobby s_DeleteAnyRoomInLobby = new S_DeleteAnyRoomInLobby();
+                S_DeleteAnyRoomInLobbyBc s_DeleteAnyRoomInLobby = new S_DeleteAnyRoomInLobbyBc();
                 s_DeleteAnyRoomInLobby.RoomId = clientSession.Room.roomInfo.RoomId;
 
                 // 방에 있는 모든 유저들을 로비로 이동
@@ -198,6 +203,11 @@ namespace Server
                     s_DeleteAnyRoomInLobby.UserInfos.Add(userInfo);
                 }
 
+                s_DeleteRoom.UserState = clientSession.CurrentState;
+                clientSession.Send(s_DeleteRoom); // 방 삭제 성공 시 클라이언트에게 전송
+
+                clientSessionCurrentRoom.Broadcast(s_DeleteRoomBC);
+
                 // 로비에 있는 유저들에게 삭제되는 방 정보와 로비에 추가될 유저 정보 전송
                 BroadcastToLobby(s_DeleteAnyRoomInLobby);
             }
@@ -205,6 +215,7 @@ namespace Server
             {
                 Console.WriteLine($"{DateTime.UtcNow} [C_DeleteRoomHandler] User {clientSession.UserInfo.UserId} failed to delete room {clientSession.Room.roomInfo.RoomId}.");
                 s_DeleteRoom.Reason = "Failed to delete room. You must be the room master.";
+                s_DeleteRoom.UserState = clientSession.CurrentState;
                 clientSession.Send(s_DeleteRoom);
             }
         }
@@ -267,21 +278,23 @@ namespace Server
                     s_LeaveRoom.UserInfos.Add(userId, lobbyClientSession.UserInfo);
                 }
             }
-            clientSession.Send(s_LeaveRoom);
 
             // 패킷 생성
-            S_LeaveRoomAnyUser s_LeaveRoomAnyUser = new S_LeaveRoomAnyUser();
+            S_LeaveRoomAnyUserBc s_LeaveRoomAnyUser = new S_LeaveRoomAnyUserBc();
             s_LeaveRoomAnyUser.RoomId = room.roomInfo.RoomId;
             s_LeaveRoomAnyUser.UserInfo = clientSession.UserInfo;
 
             // 룸에 있는 모든 유저에게 퇴장 알림 패킷 전송
             room.Broadcast(s_LeaveRoomAnyUser);
 
+            // 로비에 있는 유저들에게 로비 입장 패킷 전송
+            BroadcastToLobby(s_LeaveRoomAnyUser);
+
+            clientSession.Send(s_LeaveRoom);
+
             // 서버 로비에 퇴장하는 유저 추가
             AddUserToLobby(clientSession.UserInfo.UserId);
 
-            // 로비에 있는 유저들에게 로비 입장 패킷 전송
-            BroadcastToLobby(s_LeaveRoomAnyUser);
         }
 
         public void EnterLobby(ClientSession clientSession)
@@ -313,13 +326,13 @@ namespace Server
             // 로비에 접속한 유저에게 로비 정보 전송
             clientSession.Send(s_EnterLobby);
 
-            // 로비에 있는 유저 리스트에 추가
-            AddUserToLobby(clientSession.UserInfo.UserId);
-
             // 로비에 있는 유저들에게 접속 알림 패킷 전송
-            S_EnterLobbyAnyUser s_EnterLobbyAnyUser = new S_EnterLobbyAnyUser();
+            S_EnterLobbyAnyUserBc s_EnterLobbyAnyUser = new S_EnterLobbyAnyUserBc();
             s_EnterLobbyAnyUser.UserInfo = clientSession.UserInfo;
             BroadcastToLobby(s_EnterLobbyAnyUser);
+
+            // 로비에 있는 유저 리스트에 추가
+            AddUserToLobby(clientSession.UserInfo.UserId);
         }
 
         public void SetNickname(ClientSession clientSession, C_SetNickname c_SetNicknamePacket)
@@ -340,8 +353,11 @@ namespace Server
 
             clientSession.UserInfo.Nickname = c_SetNicknamePacket.Nickname;
             s_SetNickname.ErrorCode = ErrorCode.Success;
-            s_SetNickname.UserId = clientSession.UserInfo.UserId;
-            s_SetNickname.Nickname = c_SetNicknamePacket.Nickname;
+            clientSession.Send(s_SetNickname);
+
+            S_SetNicknameBc s_SetNicknameBC = new S_SetNicknameBc();
+            s_SetNicknameBC.UserId = clientSession.UserInfo.UserId;
+            s_SetNicknameBC.Nickname = c_SetNicknamePacket.Nickname;
             BroadcastToLobby(s_SetNickname);
         }
 
@@ -374,7 +390,7 @@ namespace Server
                 {
                     // 일반 유저인 경우
                     clientSession.Room.LeaveUser(clientSession.UserInfo.UserId);
-                    clientSession.Room.Broadcast(new S_LeaveRoomAnyUser() { RoomId = clientSession.Room.roomInfo.RoomId, UserInfo = clientSession.UserInfo }); // 방에 있는 모든 유저에게 알림
+                    clientSession.Room.Broadcast(new S_LeaveRoomAnyUserBc() { RoomId = clientSession.Room.roomInfo.RoomId, UserInfo = clientSession.UserInfo }); // 방에 있는 모든 유저에게 알림
                     clientSession.Room = null; // 방에서 나감
                 }
             }
@@ -383,7 +399,7 @@ namespace Server
             if (clientSession.CurrentState == UserState.Lobby)
             {
                 LeaveUserFromLobby(clientSession.UserInfo.UserId);
-                BroadcastToLobby(new S_LeaveLobbyAnyUser() { UserInfo = clientSession.UserInfo }); // 로비에 있는 모든 유저에게 알림
+                BroadcastToLobby(new S_LeaveLobbyAnyUserBc() { UserInfo = clientSession.UserInfo }); // 로비에 있는 모든 유저에게 알림
             }
             // 세션 종료
             SessionManager.Instance.RemoveSession(clientSession);
