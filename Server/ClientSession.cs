@@ -43,7 +43,7 @@ namespace Server
         public override void OnRecvPacket(ArraySegment<byte> data)
         {
             ushort packetId = BitConverter.ToUInt16(data.Array, 2);
-            Console.WriteLine($"{DateTime.UtcNow} {(MsgId)packetId} {UserInfo.UserId}");
+            Console.WriteLine($"[INFO] {DateTime.UtcNow} {(MsgId)packetId} UID: {UserInfo.UserId}");
             PacketManager.Instance.InvokePacketHandler(this, data);
             LastRecvDate = DateTime.UtcNow;
             IsPing = false;

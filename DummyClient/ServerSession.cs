@@ -23,6 +23,8 @@ public class ServerSession : PacketSession
         set
         {
             _currentState = value;
+            if (_currentState == UserState.Lobby)
+                RoomManager.CurrentRoom = null;
             ViewManager.ShowChangedScreen(_currentState);
         }
     }

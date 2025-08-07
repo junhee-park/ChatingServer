@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Google.Protobuf;
 using Google.Protobuf.Collections;
 using Google.Protobuf.Protocol;
+using Google.Protobuf.WellKnownTypes;
 using Server.Job;
 using ServerCore;
 
@@ -41,7 +42,7 @@ namespace Server
 
             if (clientSession.CurrentState != UserState.Lobby)
             {
-                Console.WriteLine($"{DateTime.UtcNow} [C_CreateRoomHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
+                Console.WriteLine($"[ERROR] {DateTime.UtcNow} [C_CreateRoomHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
                 s_CreateRoom.ErrorCode = ErrorCode.NotInLobby;
                 s_CreateRoom.Reason = "You must be in the Lobby to create a room.";
                 s_CreateRoom.UserState = clientSession.CurrentState;
@@ -76,7 +77,7 @@ namespace Server
             S_EnterRoom s_EnterRoom = new S_EnterRoom();
             if (clientSession.CurrentState != UserState.Lobby)
             {
-                Console.WriteLine($"{DateTime.UtcNow} [C_EnterRoomHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
+                Console.WriteLine($"[ERROR] {DateTime.UtcNow} [C_EnterRoomHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
                 s_EnterRoom.ErrorCode = ErrorCode.NotInLobby;
                 s_EnterRoom.Reason = "You must be in the Lobby to enter a room.";
                 s_EnterRoom.UserState = clientSession.CurrentState;
@@ -85,7 +86,7 @@ namespace Server
             }
             if (!rooms.TryGetValue(c_EnterRoomPacket.RoomId, out Room room))
             {
-                Console.WriteLine($"{DateTime.UtcNow} [C_EnterRoomHandler] Room {c_EnterRoomPacket.RoomId} does not exist.");
+                Console.WriteLine($"[ERROR] {DateTime.UtcNow} [C_EnterRoomHandler] User {clientSession.UserInfo.UserId}. Room {c_EnterRoomPacket.RoomId} does not exist.");
                 s_EnterRoom.RoomInfo = new RoomInfo(); // 빈 방 정보 설정
                 s_EnterRoom.RoomInfo.RoomId = c_EnterRoomPacket.RoomId; // 요청한 방 ID 설정
                 s_EnterRoom.RoomInfo.RoomName = "Unknown Room"; // 방 이름 설정
@@ -97,7 +98,7 @@ namespace Server
             }
             if (room.roomInfo.UserInfos.ContainsKey(userId))
             {
-                Console.WriteLine($"{DateTime.UtcNow} [C_EnterRoomHandler] User {userId} is already in room {c_EnterRoomPacket.RoomId}.");
+                Console.WriteLine($"[ERROR] {DateTime.UtcNow} [C_EnterRoomHandler] User {userId} is already in room {c_EnterRoomPacket.RoomId}.");
                 s_EnterRoom.ErrorCode = ErrorCode.AlreadyInRoom;
                 s_EnterRoom.Reason = "You are already in this room.";
                 clientSession.Send(s_EnterRoom);
@@ -163,7 +164,7 @@ namespace Server
             Room clientSessionCurrentRoom = clientSession.Room;
             if (clientSessionCurrentRoom == null)
             {
-                Console.WriteLine($"{DateTime.UtcNow} [C_DeleteRoomHandler] User {clientSession.UserInfo.UserId} is not in a room.");
+                Console.WriteLine($"[ERROR] {DateTime.UtcNow} [C_DeleteRoomHandler] User {clientSession.UserInfo.UserId} is not in a room.");
                 s_DeleteRoom.ErrorCode = ErrorCode.NotInRoom;
                 s_DeleteRoom.Reason = "You are not in a room.";
                 s_DeleteRoom.UserState = clientSession.CurrentState;
@@ -213,11 +214,29 @@ namespace Server
             }
             else
             {
-                Console.WriteLine($"{DateTime.UtcNow} [C_DeleteRoomHandler] User {clientSession.UserInfo.UserId} failed to delete room {clientSession.Room.roomInfo.RoomId}.");
+                Console.WriteLine($"[ERROR] {DateTime.UtcNow} [C_DeleteRoomHandler] User {clientSession.UserInfo.UserId} failed to delete room {clientSession.Room.roomInfo.RoomId}.");
                 s_DeleteRoom.Reason = "Failed to delete room. You must be the room master.";
                 s_DeleteRoom.UserState = clientSession.CurrentState;
                 clientSession.Send(s_DeleteRoom);
             }
+        }
+
+        public void BroadcastChat(string msg, ClientSession session)
+        {
+            if (session.Room == null)
+            {
+                Console.WriteLine($"[ERROR] {DateTime.UtcNow} [BroadcastChat] User {session.UserInfo.UserId} is not in a room.");
+                return; // 방에 없는 유저는 채팅을 보낼 수 없음
+            }
+
+            // 패킷 생성
+            S_ChatBc s_ChatBc = new S_ChatBc();
+            s_ChatBc.UserId = session.UserInfo.UserId;
+            s_ChatBc.Nickname = session.UserInfo.Nickname;
+            s_ChatBc.Msg = msg;
+            s_ChatBc.Timestamp = Timestamp.FromDateTime(DateTime.UtcNow);
+
+            session.Room.Broadcast(s_ChatBc);
         }
 
         public void AddUserToRoom(int roomId, ClientSession session)
@@ -343,7 +362,7 @@ namespace Server
             S_SetNickname s_SetNickname = new S_SetNickname();
             if (clientSession.CurrentState != UserState.Lobby)
             {
-                Console.WriteLine($"[C_SetNicknameHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
+                Console.WriteLine($"[ERROR] {DateTime.UtcNow} [C_SetNicknameHandler] User {clientSession.UserInfo.UserId} is not in Lobby state.");
                 s_SetNickname.ErrorCode = ErrorCode.NotInLobby;
                 s_SetNickname.Reason = "You must be in the Lobby to set a nickname.";
                 s_SetNickname.UserState = clientSession.CurrentState;

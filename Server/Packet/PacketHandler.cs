@@ -31,25 +31,18 @@ public static class PacketHandler
         s_Chat.UserState = clientSession.CurrentState;
         if (clientSession.CurrentState != UserState.Room)
         {
-            Console.WriteLine($"[C_ChatHandler] User {userId} is not in a room.");
+            Console.WriteLine($"[ERROR] {DateTime.UtcNow} [C_ChatHandler] User {userId} is not in a room.");
             s_Chat.ErrorCode = ErrorCode.NotInRoom; // 현재 상태가 Room이 아닐 경우 에러 코드 설정
             s_Chat.Reason = "You are not in a room.";
             clientSession.Send(s_Chat);
             return; // 현재 상태가 Room이 아닐 경우 처리하지 않음
         }
         
-        s_Chat.Reason = "Chat message sent successfully.";
         s_Chat.ErrorCode = ErrorCode.Success;
-
-        // 패킷 생성
-        S_ChatBc s_ChatBc = new S_ChatBc();
-        s_ChatBc.UserId = userId;
-        s_ChatBc.Nickname = clientSession.UserInfo.Nickname;
-        s_ChatBc.Msg = c_ChatPacket.Msg;
-        s_ChatBc.Timestamp = Timestamp.FromDateTime(DateTime.UtcNow);
-
         clientSession.Send(s_Chat);
-        clientSession.Room.Broadcast(s_ChatBc);
+
+        // 룸에 있는 모든 유저에게 채팅 메시지 전송
+        RoomManager.Instance.Enqueue(RoomManager.Instance.BroadcastChat, c_ChatPacket.Msg, clientSession);
     }
 
     public static void C_PingHandler(Session session, IMessage packet)
@@ -153,7 +146,7 @@ public static class PacketHandler
             }
             else
             {
-                Console.WriteLine($"{DateTime.UtcNow} [C_UserListHandler] User {userId} is not in a room or lobby.");
+                Console.WriteLine($"[ERROR] {DateTime.UtcNow} [C_UserListHandler] User {userId} is not in a room or lobby.");
                 return; // 현재 상태가 Lobby나 Room이 아닐 경우 처리하지 않음
             }
         }
@@ -169,7 +162,7 @@ public static class PacketHandler
         if (clientSession.CurrentState != UserState.Room)
         {
             S_LeaveRoom s_LeaveRoom = new S_LeaveRoom();
-            Console.WriteLine($"{DateTime.UtcNow} [C_LeaveRoomHandler] User {clientSession.UserInfo.UserId} is not in a room.");
+            Console.WriteLine($"[ERROR] {DateTime.UtcNow} [C_LeaveRoomHandler] User {clientSession.UserInfo.UserId} is not in a room.");
             s_LeaveRoom.ErrorCode = ErrorCode.NotInRoom;
             s_LeaveRoom.UserState = clientSession.CurrentState;
             clientSession.Send(s_LeaveRoom);
@@ -178,7 +171,7 @@ public static class PacketHandler
         else if (clientSession.Room.roomInfo.RoomMasterUserId == clientSession.UserInfo.UserId)
         {
             S_LeaveRoom s_LeaveRoom = new S_LeaveRoom();
-            Console.WriteLine($"{DateTime.UtcNow} [C_LeaveRoomHandler] User {clientSession.UserInfo.UserId} is the room master and cannot leave the room.");
+            Console.WriteLine($"[ERROR] {DateTime.UtcNow} [C_LeaveRoomHandler] User {clientSession.UserInfo.UserId} is the room master and cannot leave the room.");
             s_LeaveRoom.ErrorCode = ErrorCode.RoomMasterCannotLeave;
             s_LeaveRoom.UserState = clientSession.CurrentState;
             clientSession.Send(s_LeaveRoom);

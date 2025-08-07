@@ -207,7 +207,6 @@ public static class PacketHandler
         // 방 삭제 로직
         roomManager.Refresh(s_DeleteRoomPacket.Rooms);
         roomManager.RefreshUserInfos(s_DeleteRoomPacket.LobbyUserInfos);
-        roomManager.CurrentRoom = null; // 현재 방 정보 초기화
 
         // 방 목록과 유저 목록 정보를 뷰 매니저에 전달하여 UI 갱신
         serverSession.ViewManager.ShowRoomList(s_DeleteRoomPacket.Rooms);
@@ -324,7 +323,6 @@ public static class PacketHandler
 
         serverSession.RoomManager.Refresh(s_LeaveRoomPacket.Rooms);
         serverSession.RoomManager.RefreshUserInfos(s_LeaveRoomPacket.UserInfos);
-        serverSession.RoomManager.CurrentRoom = null; // 현재 방 정보 초기화
 
         // 방 목록과 유저 목록 정보를 뷰 매니저에 전달하여 UI 갱신
         serverSession.ViewManager.ShowRoomList(s_LeaveRoomPacket.Rooms);
