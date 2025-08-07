@@ -120,9 +120,9 @@ namespace Google.Protobuf.Protocol {
             "TXV0ZWQQuBcSEwoOTWVzc2FnZVRvb0xvbmcQuRcSEQoMRW1wdHlNZXNzYWdl",
             "ELoXEhUKEEZsb29kaW5nRGV0ZWN0ZWQQuxcSDwoKTm90SW5Mb2JieRCgHxIY",
             "ChNJbnRlcm5hbFNlcnZlckVycm9yEIgnEgwKB1RpbWVvdXQQiScSFgoRUHJv",
-            "dG9jb2xWaW9sYXRpb24QiicSFwoSU2VydmVyU2h1dHRpbmdEb3duEIsnKioK",
-            "CVVzZXJTdGF0ZRIICgROb25lEAASCQoFTG9iYnkQARIICgRSb29tEAJCG6oC",
-            "GEdvb2dsZS5Qcm90b2J1Zi5Qcm90b2NvbGIGcHJvdG8z"));
+            "dG9jb2xWaW9sYXRpb24QiicSFwoSU2VydmVyU2h1dHRpbmdEb3duEIsnKiAK",
+            "CVVzZXJTdGF0ZRIJCgVMb2JieRAAEggKBFJvb20QAUIbqgIYR29vZ2xlLlBy",
+            "b3RvYnVmLlByb3RvY29sYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.Protocol.MsgId), typeof(global::Google.Protobuf.Protocol.ErrorCode), typeof(global::Google.Protobuf.Protocol.UserState), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -246,9 +246,8 @@ namespace Google.Protobuf.Protocol {
   }
 
   public enum UserState {
-    [pbr::OriginalName("None")] None = 0,
-    [pbr::OriginalName("Lobby")] Lobby = 1,
-    [pbr::OriginalName("Room")] Room = 2,
+    [pbr::OriginalName("Lobby")] Lobby = 0,
+    [pbr::OriginalName("Room")] Room = 1,
   }
 
   #endregion
@@ -327,7 +326,7 @@ namespace Google.Protobuf.Protocol {
 
     /// <summary>Field number for the "userState" field.</summary>
     public const int UserStateFieldNumber = 3;
-    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.None;
+    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.Lobby;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Protocol.UserState UserState {
@@ -364,7 +363,7 @@ namespace Google.Protobuf.Protocol {
       int hash = 1;
       if (ErrorCode != global::Google.Protobuf.Protocol.ErrorCode.Success) hash ^= ErrorCode.GetHashCode();
       if (Reason.Length != 0) hash ^= Reason.GetHashCode();
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) hash ^= UserState.GetHashCode();
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) hash ^= UserState.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -391,7 +390,7 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(18);
         output.WriteString(Reason);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(24);
         output.WriteEnum((int) UserState);
       }
@@ -413,7 +412,7 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(18);
         output.WriteString(Reason);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(24);
         output.WriteEnum((int) UserState);
       }
@@ -433,7 +432,7 @@ namespace Google.Protobuf.Protocol {
       if (Reason.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Reason);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) UserState);
       }
       if (_unknownFields != null) {
@@ -454,7 +453,7 @@ namespace Google.Protobuf.Protocol {
       if (other.Reason.Length != 0) {
         Reason = other.Reason;
       }
-      if (other.UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (other.UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         UserState = other.UserState;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -1119,7 +1118,7 @@ namespace Google.Protobuf.Protocol {
 
     /// <summary>Field number for the "userState" field.</summary>
     public const int UserStateFieldNumber = 3;
-    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.None;
+    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.Lobby;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Protocol.UserState UserState {
@@ -1156,7 +1155,7 @@ namespace Google.Protobuf.Protocol {
       int hash = 1;
       if (ErrorCode != global::Google.Protobuf.Protocol.ErrorCode.Success) hash ^= ErrorCode.GetHashCode();
       if (Reason.Length != 0) hash ^= Reason.GetHashCode();
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) hash ^= UserState.GetHashCode();
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) hash ^= UserState.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1183,7 +1182,7 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(18);
         output.WriteString(Reason);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(24);
         output.WriteEnum((int) UserState);
       }
@@ -1205,7 +1204,7 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(18);
         output.WriteString(Reason);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(24);
         output.WriteEnum((int) UserState);
       }
@@ -1225,7 +1224,7 @@ namespace Google.Protobuf.Protocol {
       if (Reason.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Reason);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) UserState);
       }
       if (_unknownFields != null) {
@@ -1246,7 +1245,7 @@ namespace Google.Protobuf.Protocol {
       if (other.Reason.Length != 0) {
         Reason = other.Reason;
       }
-      if (other.UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (other.UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         UserState = other.UserState;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -1602,7 +1601,7 @@ namespace Google.Protobuf.Protocol {
 
     /// <summary>Field number for the "userState" field.</summary>
     public const int UserStateFieldNumber = 4;
-    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.None;
+    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.Lobby;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Protocol.UserState UserState {
@@ -1641,7 +1640,7 @@ namespace Google.Protobuf.Protocol {
       if (ErrorCode != global::Google.Protobuf.Protocol.ErrorCode.Success) hash ^= ErrorCode.GetHashCode();
       if (Reason.Length != 0) hash ^= Reason.GetHashCode();
       if (roomInfo_ != null) hash ^= RoomInfo.GetHashCode();
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) hash ^= UserState.GetHashCode();
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) hash ^= UserState.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1672,7 +1671,7 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(26);
         output.WriteMessage(RoomInfo);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(32);
         output.WriteEnum((int) UserState);
       }
@@ -1698,7 +1697,7 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(26);
         output.WriteMessage(RoomInfo);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(32);
         output.WriteEnum((int) UserState);
       }
@@ -1721,7 +1720,7 @@ namespace Google.Protobuf.Protocol {
       if (roomInfo_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(RoomInfo);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) UserState);
       }
       if (_unknownFields != null) {
@@ -1748,7 +1747,7 @@ namespace Google.Protobuf.Protocol {
         }
         RoomInfo.MergeFrom(other.RoomInfo);
       }
-      if (other.UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (other.UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         UserState = other.UserState;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -2105,7 +2104,7 @@ namespace Google.Protobuf.Protocol {
 
     /// <summary>Field number for the "userState" field.</summary>
     public const int UserStateFieldNumber = 3;
-    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.None;
+    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.Lobby;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Protocol.UserState UserState {
@@ -2142,7 +2141,7 @@ namespace Google.Protobuf.Protocol {
       int hash = 1;
       if (ErrorCode != global::Google.Protobuf.Protocol.ErrorCode.Success) hash ^= ErrorCode.GetHashCode();
       if (Reason.Length != 0) hash ^= Reason.GetHashCode();
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) hash ^= UserState.GetHashCode();
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) hash ^= UserState.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -2169,7 +2168,7 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(18);
         output.WriteString(Reason);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(24);
         output.WriteEnum((int) UserState);
       }
@@ -2191,7 +2190,7 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(18);
         output.WriteString(Reason);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(24);
         output.WriteEnum((int) UserState);
       }
@@ -2211,7 +2210,7 @@ namespace Google.Protobuf.Protocol {
       if (Reason.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Reason);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) UserState);
       }
       if (_unknownFields != null) {
@@ -2232,7 +2231,7 @@ namespace Google.Protobuf.Protocol {
       if (other.Reason.Length != 0) {
         Reason = other.Reason;
       }
-      if (other.UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (other.UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         UserState = other.UserState;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -2899,7 +2898,7 @@ namespace Google.Protobuf.Protocol {
 
     /// <summary>Field number for the "userState" field.</summary>
     public const int UserStateFieldNumber = 4;
-    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.None;
+    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.Lobby;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Protocol.UserState UserState {
@@ -2938,7 +2937,7 @@ namespace Google.Protobuf.Protocol {
       if (ErrorCode != global::Google.Protobuf.Protocol.ErrorCode.Success) hash ^= ErrorCode.GetHashCode();
       if (Reason.Length != 0) hash ^= Reason.GetHashCode();
       if (roomInfo_ != null) hash ^= RoomInfo.GetHashCode();
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) hash ^= UserState.GetHashCode();
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) hash ^= UserState.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -2969,7 +2968,7 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(26);
         output.WriteMessage(RoomInfo);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(32);
         output.WriteEnum((int) UserState);
       }
@@ -2995,7 +2994,7 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(26);
         output.WriteMessage(RoomInfo);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(32);
         output.WriteEnum((int) UserState);
       }
@@ -3018,7 +3017,7 @@ namespace Google.Protobuf.Protocol {
       if (roomInfo_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(RoomInfo);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) UserState);
       }
       if (_unknownFields != null) {
@@ -3045,7 +3044,7 @@ namespace Google.Protobuf.Protocol {
         }
         RoomInfo.MergeFrom(other.RoomInfo);
       }
-      if (other.UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (other.UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         UserState = other.UserState;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -3848,7 +3847,7 @@ namespace Google.Protobuf.Protocol {
 
     /// <summary>Field number for the "userState" field.</summary>
     public const int UserStateFieldNumber = 5;
-    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.None;
+    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.Lobby;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Protocol.UserState UserState {
@@ -3889,7 +3888,7 @@ namespace Google.Protobuf.Protocol {
       if (Reason.Length != 0) hash ^= Reason.GetHashCode();
       hash ^= UserInfos.GetHashCode();
       hash ^= Rooms.GetHashCode();
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) hash ^= UserState.GetHashCode();
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) hash ^= UserState.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3918,7 +3917,7 @@ namespace Google.Protobuf.Protocol {
       }
       userInfos_.WriteTo(output, _map_userInfos_codec);
       rooms_.WriteTo(output, _map_rooms_codec);
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(40);
         output.WriteEnum((int) UserState);
       }
@@ -3942,7 +3941,7 @@ namespace Google.Protobuf.Protocol {
       }
       userInfos_.WriteTo(ref output, _map_userInfos_codec);
       rooms_.WriteTo(ref output, _map_rooms_codec);
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(40);
         output.WriteEnum((int) UserState);
       }
@@ -3964,7 +3963,7 @@ namespace Google.Protobuf.Protocol {
       }
       size += userInfos_.CalculateSize(_map_userInfos_codec);
       size += rooms_.CalculateSize(_map_rooms_codec);
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) UserState);
       }
       if (_unknownFields != null) {
@@ -3987,7 +3986,7 @@ namespace Google.Protobuf.Protocol {
       }
       userInfos_.MergeFrom(other.userInfos_);
       rooms_.MergeFrom(other.rooms_);
-      if (other.UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (other.UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         UserState = other.UserState;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
@@ -5843,7 +5842,7 @@ namespace Google.Protobuf.Protocol {
 
     /// <summary>Field number for the "userState" field.</summary>
     public const int UserStateFieldNumber = 2;
-    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.None;
+    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.Lobby;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Protocol.UserState UserState {
@@ -5891,7 +5890,7 @@ namespace Google.Protobuf.Protocol {
     public override int GetHashCode() {
       int hash = 1;
       if (userInfo_ != null) hash ^= UserInfo.GetHashCode();
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) hash ^= UserState.GetHashCode();
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) hash ^= UserState.GetHashCode();
       if (roomInfo_ != null) hash ^= RoomInfo.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -5915,7 +5914,7 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(10);
         output.WriteMessage(UserInfo);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(16);
         output.WriteEnum((int) UserState);
       }
@@ -5937,7 +5936,7 @@ namespace Google.Protobuf.Protocol {
         output.WriteRawTag(10);
         output.WriteMessage(UserInfo);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(16);
         output.WriteEnum((int) UserState);
       }
@@ -5958,7 +5957,7 @@ namespace Google.Protobuf.Protocol {
       if (userInfo_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(UserInfo);
       }
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) UserState);
       }
       if (roomInfo_ != null) {
@@ -5982,7 +5981,7 @@ namespace Google.Protobuf.Protocol {
         }
         UserInfo.MergeFrom(other.UserInfo);
       }
-      if (other.UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (other.UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         UserState = other.UserState;
       }
       if (other.roomInfo_ != null) {
@@ -7064,7 +7063,7 @@ namespace Google.Protobuf.Protocol {
 
     /// <summary>Field number for the "userState" field.</summary>
     public const int UserStateFieldNumber = 3;
-    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.None;
+    private global::Google.Protobuf.Protocol.UserState userState_ = global::Google.Protobuf.Protocol.UserState.Lobby;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Protocol.UserState UserState {
@@ -7101,7 +7100,7 @@ namespace Google.Protobuf.Protocol {
       int hash = 1;
       hash ^= Rooms.GetHashCode();
       hash ^= LobbyUserInfos.GetHashCode();
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) hash ^= UserState.GetHashCode();
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) hash ^= UserState.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -7122,7 +7121,7 @@ namespace Google.Protobuf.Protocol {
     #else
       rooms_.WriteTo(output, _map_rooms_codec);
       lobbyUserInfos_.WriteTo(output, _map_lobbyUserInfos_codec);
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(24);
         output.WriteEnum((int) UserState);
       }
@@ -7138,7 +7137,7 @@ namespace Google.Protobuf.Protocol {
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       rooms_.WriteTo(ref output, _map_rooms_codec);
       lobbyUserInfos_.WriteTo(ref output, _map_lobbyUserInfos_codec);
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         output.WriteRawTag(24);
         output.WriteEnum((int) UserState);
       }
@@ -7154,7 +7153,7 @@ namespace Google.Protobuf.Protocol {
       int size = 0;
       size += rooms_.CalculateSize(_map_rooms_codec);
       size += lobbyUserInfos_.CalculateSize(_map_lobbyUserInfos_codec);
-      if (UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) UserState);
       }
       if (_unknownFields != null) {
@@ -7171,7 +7170,7 @@ namespace Google.Protobuf.Protocol {
       }
       rooms_.MergeFrom(other.rooms_);
       lobbyUserInfos_.MergeFrom(other.lobbyUserInfos_);
-      if (other.UserState != global::Google.Protobuf.Protocol.UserState.None) {
+      if (other.UserState != global::Google.Protobuf.Protocol.UserState.Lobby) {
         UserState = other.UserState;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);

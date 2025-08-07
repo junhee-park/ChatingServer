@@ -63,7 +63,7 @@ namespace Server
                 S_CreateRoomBc s_CreateRoomBC = new S_CreateRoomBc();
                 s_CreateRoomBC.RoomInfo = roomInfo;
 
-                BroadcastToLobby(s_CreateRoom);
+                BroadcastToLobby(s_CreateRoomBC);
 
             }
         }
@@ -358,7 +358,7 @@ namespace Server
             S_SetNicknameBc s_SetNicknameBC = new S_SetNicknameBc();
             s_SetNicknameBC.UserId = clientSession.UserInfo.UserId;
             s_SetNicknameBC.Nickname = c_SetNicknamePacket.Nickname;
-            BroadcastToLobby(s_SetNickname);
+            BroadcastToLobby(s_SetNicknameBC);
         }
 
         public void GetUserInfo(ClientSession clientSession)

@@ -43,6 +43,10 @@ namespace DummyClient
                         serverSession.InitViewManager(new ConsoleViewManager());
                         serverSession.OnConnect(saea.RemoteEndPoint);
                         sessions.Add(serverSession);
+
+                        C_EnterLobby c_EnterLobby = new C_EnterLobby();
+
+                        serverSession.Send(c_EnterLobby);
                         return serverSession;
                     }
                 },
@@ -378,14 +382,6 @@ namespace DummyClient
 
         public static void DummyTest()
         {
-            foreach (var session in sessions)
-            {
-                var dummySession = session as TestServerSession;
-                C_EnterLobby c_EnterLobby = new C_EnterLobby();
-
-                dummySession.Send(c_EnterLobby);
-            }
-
             Thread.Sleep(1000);
             Console.WriteLine("DummyTest Start");
             // DummyTest는 세션을 생성하고, 로비에 입장한 후 랜덤으로 행동을 취함
@@ -476,44 +472,7 @@ namespace DummyClient
             }
 
         }
-
-        public static void TestRtt()
-        {
-            Stopwatch stopwatch = new Stopwatch();
-            while (true)
-            {
-                if (stopwatch.IsRunning == false)
-                    stopwatch.Start();
-
-                if (stopwatch.ElapsedMilliseconds >= 30000)
-                {
-                    stopwatch.Stop();
-                    var stream = File.CreateText("./test.txt");
-                    foreach (var item in sessions)
-                    {
-                        var session = item as TestServerSession;
-                        long totalRtt = 0;
-                        for (int i = 0; i < session.rtts.Count; i++)
-                        {
-                            totalRtt += session.rtts[i];
-                            if (session.testServerSessionName == "TestSession_1")
-                            {
-                                stream.WriteLine($"{session.testServerSessionName} - RTT {i + 1}: {(double)session.rtts[i] / 10000} ms");
-                                //stream.WriteLine($"{session.testServerSessionName} - RTT {i + 1}: {(double)session.rtts[i]} ms");
-                            }
-                        }
-                        var tmp = (double)totalRtt / session.rtts.Count;
-                        stream.WriteLine($"{session.testServerSessionName} - Total Packet Count: {session.rtts.Count}, Min RTT: {(double)session.minRttMs / 10000} ms, Max RTT: {(double)session.maxRttMs / 10000} ms, Avg RTT: {tmp / 10000} ms");
-                        //stream.WriteLine($"{session.testServerSessionName} - Total Packet Count: {session.rtts.Count}, Min RTT: {session.minRttMs} ms, Max RTT: {session.maxRttMs} ms, Avg RTT: {tmp} ms");
-                    }
-                    stream.Dispose();
-                    break;
-                }
-
-                Thread.Sleep(testSendMs);
-            }
-        }
-
+        
     }
 
     public class TestServerSession : ServerSession
@@ -523,15 +482,16 @@ namespace DummyClient
         public string testServerSessionName;
         public long minRttMs = long.MaxValue;
         public long maxRttMs = 0;
-        public List<long> rtts = new List<long>();
 
-        StringBuilder testRoomIdlogs = new StringBuilder();
-        object testRoomIdlogsLock = new object();
+        StringBuilder testlogs = new StringBuilder();
+        object testlogsLock = new object();
+        StreamWriter file;
 
         public Action testLog;
         public TestServerSession(Socket socket) : base(socket)
         {
             testServerSessionName = $"TestSession_{Interlocked.Increment(ref count)}";
+            file = File.CreateText($"{testServerSessionName}.txt");
         }
 
 
@@ -561,21 +521,41 @@ namespace DummyClient
             ushort size = BitConverter.ToUInt16(data.Array, 0);
             ushort packetId = BitConverter.ToUInt16(data.Array, 2);
             MsgId msgId = (MsgId)packetId;
-            Console.WriteLine($"{DateTime.UtcNow} {testServerSessionName}[{msgId.ToString()}] size: {size}");
+            lock (testlogsLock)
+            {
+                file.Write($"{DateTime.UtcNow} {testServerSessionName}({UserInfo.UserId})[{msgId.ToString()}] size: {size}, 상태: {CurrentState.ToString()} -> ");
+                //testlogs.Append($"{DateTime.UtcNow} {testServerSessionName}[{msgId.ToString()}] size: {size}, 실행 전 상태: {CurrentState.ToString()}, ");
+            }
+            //Console.WriteLine($"{DateTime.UtcNow} {testServerSessionName}[{msgId.ToString()}] size: {size}");
 
             PacketManager.Instance.InvokePacketHandler(this, data);
 
+            lock (testlogsLock)
+            {
+                file.Write($"");
+                //testlogs.Append($"실행 후 상태: {CurrentState.ToString()},");
+            }
+
+            // 패킷 디버그용 로그
             if (msgId == MsgId.SEnterRoom)
             {
                 ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
                 var s_EnterRoom = PacketManager.Instance.MakePacket<S_EnterRoom>(d);
                 if (s_EnterRoom.ErrorCode == ErrorCode.Success)
                 {
-                    lock (testRoomIdlogsLock)
+                    lock (testlogsLock)
                     {
-                        testRoomIdlogs.AppendLine($"{MsgId.SEnterRoom.ToString()} {s_EnterRoom.RoomInfo.RoomId} {CurrentState.ToString()} {RoomManager.CurrentRoom.RoomId} {RoomManager.CurrentRoom.RoomMasterUserId}");
+                        file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}, RoomId: {s_EnterRoom.RoomInfo.RoomId}");
+                        //testlogs.AppendLine($", RoomId: {s_EnterRoom.RoomInfo.RoomId}, CurrentRoomId: {RoomManager.CurrentRoom.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom.RoomMasterUserId}");
                     }
-                    
+
+                }
+                else
+                {
+                    lock (testlogsLock)
+                    {
+                        file.WriteLine($"{s_EnterRoom.ErrorCode}");
+                    }
                 }
             }
             else if (msgId == MsgId.SCreateRoom)
@@ -584,9 +564,16 @@ namespace DummyClient
                 var s_packet = PacketManager.Instance.MakePacket<S_CreateRoom>(d);
                 if (s_packet.ErrorCode == ErrorCode.Success)
                 {
-                    lock (testRoomIdlogsLock)
-                    {                        
-                        testRoomIdlogs.AppendLine($"{MsgId.SCreateRoom.ToString()} {s_packet.RoomInfo.RoomId} {CurrentState.ToString()} {RoomManager.CurrentRoom?.RoomId} {RoomManager.CurrentRoom?.RoomMasterUserId}");
+                    lock (testlogsLock)
+                    {
+                        file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}, RoomId: {s_packet.RoomInfo.RoomId}");
+                    }
+                }
+                else
+                {
+                    lock (testlogsLock)
+                    {
+                        file.WriteLine($"{s_packet.ErrorCode}");
                     }
                 }
             }
@@ -596,9 +583,16 @@ namespace DummyClient
                 var s_packet = PacketManager.Instance.MakePacket<S_DeleteRoom>(d);
                 if (s_packet.ErrorCode == ErrorCode.Success)
                 {
-                    lock (testRoomIdlogsLock)
+                    lock (testlogsLock)
                     {
-                        testRoomIdlogs.AppendLine($"{MsgId.SDeleteRoom.ToString()} {CurrentState.ToString()}");
+                        file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}, {s_packet.ErrorCode}");
+                    }
+                }
+                else
+                {
+                    lock (testlogsLock)
+                    {
+                        file.WriteLine($"{s_packet.ErrorCode}");
                     }
                 }
             }
@@ -608,9 +602,16 @@ namespace DummyClient
                 var s_packet = PacketManager.Instance.MakePacket<S_LeaveRoom>(d);
                 if (s_packet.ErrorCode == ErrorCode.Success)
                 {
-                    lock (testRoomIdlogsLock)
+                    lock (testlogsLock)
                     {
-                        testRoomIdlogs.AppendLine($"{MsgId.SLeaveRoom.ToString()} {CurrentState.ToString()}");
+                        file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}, {s_packet.ErrorCode}");
+                    }
+                }
+                else
+                {
+                    lock (testlogsLock)
+                    {
+                        file.WriteLine($"{s_packet.ErrorCode}");
                     }
                 }
             }
@@ -618,13 +619,18 @@ namespace DummyClient
             {
                 ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
                 var s_packet = PacketManager.Instance.MakePacket<S_UserInfo>(d);
-                lock (testRoomIdlogsLock)
+                lock (testlogsLock)
                 {
-                    testRoomIdlogs.AppendLine($"{MsgId.SUserInfo.ToString()} RoomId: {s_packet.RoomInfo?.RoomId}, State: {s_packet.UserState}, RoomMasterId: {s_packet.RoomInfo?.RoomMasterUserId}");
+                    file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}, RoomId: {s_packet.RoomInfo?.RoomId}");
                 }
             }
+            else
+            {
+                file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}");
+                //testlogs.AppendLine();
+            }
 
-                testLog?.Invoke();
+            testLog?.Invoke();
         }
 
         public override void OnSend(int bytesTransferred)

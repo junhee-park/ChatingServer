@@ -16,7 +16,7 @@ namespace Server
         public UserInfo UserInfo { get; set; } = new UserInfo(); // 유저 정보
         public Room Room { get; set; } = null; // 현재 방 정보 (null이면 방에 없음)
 
-        public UserState CurrentState { get; set; } = UserState.None; // 현재 상태 (Lobby, Room 등)
+        public UserState CurrentState { get; set; } = UserState.Lobby; // 현재 상태 (Lobby, Room 등)
 
         public DateTime LastRecvDate { get; set; } = DateTime.UtcNow;
         public bool IsPing { get; set; } // 핑 요청 여부
@@ -42,6 +42,8 @@ namespace Server
 
         public override void OnRecvPacket(ArraySegment<byte> data)
         {
+            ushort packetId = BitConverter.ToUInt16(data.Array, 2);
+            Console.WriteLine($"{DateTime.UtcNow} {(MsgId)packetId} {UserInfo.UserId}");
             PacketManager.Instance.InvokePacketHandler(this, data);
             LastRecvDate = DateTime.UtcNow;
             IsPing = false;
