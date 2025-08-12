@@ -20,7 +20,7 @@ namespace DummyClient
         static object _lock = new object();
 
         // testConnection * (1000 / testSendMs) = tps
-        static int testConnection = 10;
+        static int testConnection = 100;
         static int testSendMs = 1000;
 
 
@@ -521,114 +521,109 @@ namespace DummyClient
             ushort size = BitConverter.ToUInt16(data.Array, 0);
             ushort packetId = BitConverter.ToUInt16(data.Array, 2);
             MsgId msgId = (MsgId)packetId;
-            lock (testlogsLock)
-            {
-                file.Write($"{DateTime.UtcNow} {testServerSessionName}({UserInfo.UserId})[{msgId.ToString()}] size: {size}, 상태: {CurrentState.ToString()} -> ");
-                //testlogs.Append($"{DateTime.UtcNow} {testServerSessionName}[{msgId.ToString()}] size: {size}, 실행 전 상태: {CurrentState.ToString()}, ");
-            }
-            //Console.WriteLine($"{DateTime.UtcNow} {testServerSessionName}[{msgId.ToString()}] size: {size}");
+            //lock (testlogsLock)
+            //{
+            //    file.Write($"{DateTime.UtcNow} {testServerSessionName}({UserInfo.UserId})[{msgId.ToString()}] size: {size}, 상태: {CurrentState.ToString()} -> ");
+            //    //testlogs.Append($"{DateTime.UtcNow} {testServerSessionName}[{msgId.ToString()}] size: {size}, 실행 전 상태: {CurrentState.ToString()}, ");
+            //}
+            Console.WriteLine($"{DateTime.UtcNow} {testServerSessionName}({UserInfo.UserId})[{msgId.ToString()}] size: {size}");
 
             PacketManager.Instance.InvokePacketHandler(this, data);
 
-            lock (testlogsLock)
-            {
-                file.Write($"");
-                //testlogs.Append($"실행 후 상태: {CurrentState.ToString()},");
-            }
 
-            // 패킷 디버그용 로그
-            if (msgId == MsgId.SEnterRoom)
-            {
-                ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
-                var s_EnterRoom = PacketManager.Instance.MakePacket<S_EnterRoom>(d);
-                if (s_EnterRoom.ErrorCode == ErrorCode.Success)
-                {
-                    lock (testlogsLock)
-                    {
-                        file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}, RoomId: {s_EnterRoom.RoomInfo.RoomId}");
-                        //testlogs.AppendLine($", RoomId: {s_EnterRoom.RoomInfo.RoomId}, CurrentRoomId: {RoomManager.CurrentRoom.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom.RoomMasterUserId}");
-                    }
+            //// 패킷 디버그용 로그
+            //if (msgId == MsgId.SEnterRoom)
+            //{
+            //    ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
+            //    var s_EnterRoom = PacketManager.Instance.MakePacket<S_EnterRoom>(d);
+            //    if (s_EnterRoom.ErrorCode == ErrorCode.Success)
+            //    {
+            //        lock (testlogsLock)
+            //        {
+            //            file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}, RoomId: {s_EnterRoom.RoomInfo.RoomId}");
+            //            //testlogs.AppendLine($", RoomId: {s_EnterRoom.RoomInfo.RoomId}, CurrentRoomId: {RoomManager.CurrentRoom.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom.RoomMasterUserId}");
+            //        }
 
-                }
-                else
-                {
-                    lock (testlogsLock)
-                    {
-                        file.WriteLine($"{s_EnterRoom.ErrorCode}");
-                    }
-                }
-            }
-            else if (msgId == MsgId.SCreateRoom)
-            {
-                ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
-                var s_packet = PacketManager.Instance.MakePacket<S_CreateRoom>(d);
-                if (s_packet.ErrorCode == ErrorCode.Success)
-                {
-                    lock (testlogsLock)
-                    {
-                        file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}, RoomId: {s_packet.RoomInfo.RoomId}");
-                    }
-                }
-                else
-                {
-                    lock (testlogsLock)
-                    {
-                        file.WriteLine($"{s_packet.ErrorCode}");
-                    }
-                }
-            }
-            else if (msgId == MsgId.SDeleteRoom)
-            {
-                ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
-                var s_packet = PacketManager.Instance.MakePacket<S_DeleteRoom>(d);
-                if (s_packet.ErrorCode == ErrorCode.Success)
-                {
-                    lock (testlogsLock)
-                    {
-                        file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}, {s_packet.ErrorCode}");
-                    }
-                }
-                else
-                {
-                    lock (testlogsLock)
-                    {
-                        file.WriteLine($"{s_packet.ErrorCode}");
-                    }
-                }
-            }
-            else if (msgId == MsgId.SLeaveRoom)
-            {
-                ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
-                var s_packet = PacketManager.Instance.MakePacket<S_LeaveRoom>(d);
-                if (s_packet.ErrorCode == ErrorCode.Success)
-                {
-                    lock (testlogsLock)
-                    {
-                        file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}, {s_packet.ErrorCode}");
-                    }
-                }
-                else
-                {
-                    lock (testlogsLock)
-                    {
-                        file.WriteLine($"{s_packet.ErrorCode}");
-                    }
-                }
-            }
-            else if (msgId == MsgId.SUserInfo)
-            {
-                ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
-                var s_packet = PacketManager.Instance.MakePacket<S_UserInfo>(d);
-                lock (testlogsLock)
-                {
-                    file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}, RoomId: {s_packet.RoomInfo?.RoomId}");
-                }
-            }
-            else
-            {
-                file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}");
-                //testlogs.AppendLine();
-            }
+            //    }
+            //    else
+            //    {
+            //        lock (testlogsLock)
+            //        {
+            //            file.WriteLine($"{s_EnterRoom.ErrorCode}");
+            //        }
+            //    }
+            //}
+            //else if (msgId == MsgId.SCreateRoom)
+            //{
+            //    ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
+            //    var s_packet = PacketManager.Instance.MakePacket<S_CreateRoom>(d);
+            //    if (s_packet.ErrorCode == ErrorCode.Success)
+            //    {
+            //        lock (testlogsLock)
+            //        {
+            //            file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}, RoomId: {s_packet.RoomInfo.RoomId}");
+            //        }
+            //    }
+            //    else
+            //    {
+            //        lock (testlogsLock)
+            //        {
+            //            file.WriteLine($"{s_packet.ErrorCode}");
+            //        }
+            //    }
+            //}
+            //else if (msgId == MsgId.SDeleteRoom)
+            //{
+            //    ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
+            //    var s_packet = PacketManager.Instance.MakePacket<S_DeleteRoom>(d);
+            //    if (s_packet.ErrorCode == ErrorCode.Success)
+            //    {
+            //        lock (testlogsLock)
+            //        {
+            //            file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}, {s_packet.ErrorCode}");
+            //        }
+            //    }
+            //    else
+            //    {
+            //        lock (testlogsLock)
+            //        {
+            //            file.WriteLine($"{s_packet.ErrorCode}");
+            //        }
+            //    }
+            //}
+            //else if (msgId == MsgId.SLeaveRoom)
+            //{
+            //    ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
+            //    var s_packet = PacketManager.Instance.MakePacket<S_LeaveRoom>(d);
+            //    if (s_packet.ErrorCode == ErrorCode.Success)
+            //    {
+            //        lock (testlogsLock)
+            //        {
+            //            file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}, {s_packet.ErrorCode}");
+            //        }
+            //    }
+            //    else
+            //    {
+            //        lock (testlogsLock)
+            //        {
+            //            file.WriteLine($"{s_packet.ErrorCode}");
+            //        }
+            //    }
+            //}
+            //else if (msgId == MsgId.SUserInfo)
+            //{
+            //    ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
+            //    var s_packet = PacketManager.Instance.MakePacket<S_UserInfo>(d);
+            //    lock (testlogsLock)
+            //    {
+            //        file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}, RoomId: {s_packet.RoomInfo?.RoomId}");
+            //    }
+            //}
+            //else
+            //{
+            //    file.WriteLine($"{CurrentState.ToString()}, CurrentRoomId: {RoomManager.CurrentRoom?.RoomId}, CurrentRoomMasterUserId: {RoomManager.CurrentRoom?.RoomMasterUserId}");
+            //    //testlogs.AppendLine();
+            //}
 
             testLog?.Invoke();
         }
