@@ -1,16 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
-using DummyClient;
-using Google.Protobuf;
-using Google.Protobuf.Collections;
+﻿using Google.Protobuf;
 using Google.Protobuf.Protocol;
-using Google.Protobuf.WellKnownTypes;
 using ServerCore;
 
 /// <summary>
@@ -351,6 +340,7 @@ public static class PacketHandler
         serverSession.RoomManager.AddUserToLobby(s_EnterLobby.UserInfo);
 
         // 뷰 매니저에 룸 리스트와 유저 리스트를 전달하여 UI 갱신
+        s_EnterLobby.UserInfos.TryAdd(s_EnterLobby.UserInfo.UserId, s_EnterLobby.UserInfo);
         serverSession.ViewManager.ShowRoomList(s_EnterLobby.Rooms);
         serverSession.ViewManager.ShowLobbyUserList(s_EnterLobby.UserInfos);
         serverSession.CurrentState = UserState.Lobby; // 로비 화면으로 전환
