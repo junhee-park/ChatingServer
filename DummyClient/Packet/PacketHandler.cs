@@ -314,6 +314,7 @@ public static class PacketHandler
         serverSession.RoomManager.RefreshUserInfos(s_LeaveRoomPacket.UserInfos);
 
         // 방 목록과 유저 목록 정보를 뷰 매니저에 전달하여 UI 갱신
+        s_LeaveRoomPacket.UserInfos.TryAdd(serverSession.UserInfo.UserId, serverSession.UserInfo);
         serverSession.ViewManager.ShowRoomList(s_LeaveRoomPacket.Rooms);
         serverSession.ViewManager.ShowLobbyUserList(s_LeaveRoomPacket.UserInfos);
         serverSession.CurrentState = UserState.Lobby; // 로비 화면으로 전환
