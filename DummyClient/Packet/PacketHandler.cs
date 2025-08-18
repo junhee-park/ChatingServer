@@ -178,8 +178,6 @@ public static class PacketHandler
             serverSession.CurrentState = s_DeleteRoomPacket.UserState; // 유저 상태 갱신
             return;
         }
-
-        serverSession.CurrentState = UserState.Lobby;
     }
 
     /// <summary>

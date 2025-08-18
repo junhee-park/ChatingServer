@@ -146,16 +146,6 @@ namespace Server
             }
         }
 
-        public bool RemoveRoom(int roomId, int masterUserId)
-        {
-            // 방 삭제
-            if (!rooms.TryGetValue(roomId, out Room room))
-                return false;
-            if (room.roomInfo.RoomMasterUserId != masterUserId)
-                return false; // 방장만 방을 삭제할 수 있음
-            return rooms.TryRemove(new KeyValuePair<int, Room>(roomId, room));
-        }
-
         public void RemoveRoom(ClientSession clientSession)
         {
             // 패킷 생성
@@ -172,45 +162,62 @@ namespace Server
                 return;
             }
 
-            S_DeleteRoomBc s_DeleteRoomBC = new S_DeleteRoomBc();
-            foreach (var room in rooms.Values)
-            {
-                s_DeleteRoomBC.Rooms.Add(room.roomInfo.RoomId, room.roomInfo);
-            }
-            foreach (var userId in userIds)
-            {
-                if (SessionManager.Instance.clientSessions.TryGetValue(userId, out ClientSession clientSessionInLobby))
-                {
-                    s_DeleteRoomBC.LobbyUserInfos.Add(userId, clientSessionInLobby.UserInfo);
-                }
-            }
+            bool success = rooms.TryGetValue(clientSession.Room.roomInfo.RoomId, out Room targetRoom);
+            if (targetRoom.roomInfo.RoomMasterUserId != clientSession.UserInfo.UserId)
+                success = false; // 방장만 방을 삭제할 수 있음
+            if (success)
+                success = rooms.TryRemove(new KeyValuePair<int, Room>(clientSession.Room.roomInfo.RoomId, targetRoom));
 
-            bool success = RemoveRoom(clientSession.Room.roomInfo.RoomId, clientSession.UserInfo.UserId);
             s_DeleteRoom.ErrorCode = success ? ErrorCode.Success : ErrorCode.NotAuthorized;
             if (success)
             {
+                // 삭제되는 방에 있던 유저 대상 브로드캐스팅 패킷. 
+                S_DeleteRoomBc s_DeleteRoomBC = new S_DeleteRoomBc();
+
+                // 로비에 있는 유저 대상 브로드캐스팅 패킷.
                 S_DeleteAnyRoomInLobbyBc s_DeleteAnyRoomInLobby = new S_DeleteAnyRoomInLobbyBc();
                 s_DeleteAnyRoomInLobby.RoomId = clientSession.Room.roomInfo.RoomId;
 
-                // 방에 있는 모든 유저들을 로비로 이동
+                // 현재 방 정보를 패킷에 추가
+                foreach (var room in rooms.Values)
+                {
+                    s_DeleteRoomBC.Rooms.Add(room.roomInfo.RoomId, room.roomInfo);
+                }
+
+                // 현재 로비에 있는 유저 정보를 패킷에 추가
+                foreach (var userId in userIds)
+                {
+                    if (SessionManager.Instance.clientSessions.TryGetValue(userId, out ClientSession clientSessionInLobby))
+                    {
+                        s_DeleteRoomBC.LobbyUserInfos.Add(userId, clientSessionInLobby.UserInfo);
+                    }
+                }
+
+                // 방에 있는 모든 유저들을 패킷에 추가
                 foreach (var userInfo in clientSession.Room.roomInfo.UserInfos.Values)
                 {
-                    SessionManager.Instance.clientSessions.TryGetValue(userInfo.UserId, out ClientSession cs);
-                    // 유저 상태 변경
-                    cs.CurrentState = UserState.Lobby;
-                    cs.Room = null;
-                    AddUserToLobby(userInfo.UserId);
-
+                    s_DeleteRoomBC.LobbyUserInfos.Add(userInfo.UserId, userInfo);
                     s_DeleteAnyRoomInLobby.UserInfos.Add(userInfo);
                 }
 
-                s_DeleteRoom.UserState = clientSession.CurrentState;
+                s_DeleteRoom.UserState = UserState.Lobby;
                 clientSession.Send(s_DeleteRoom); // 방 삭제 성공 시 클라이언트에게 전송
 
                 clientSessionCurrentRoom.Broadcast(s_DeleteRoomBC);
 
                 // 로비에 있는 유저들에게 삭제되는 방 정보와 로비에 추가될 유저 정보 전송
                 BroadcastToLobby(s_DeleteAnyRoomInLobby);
+
+                // 방에 있던 유저들을 로비로 이동
+                foreach (var userInfo in clientSession.Room.roomInfo.UserInfos.Values)
+                {
+                    SessionManager.Instance.clientSessions.TryGetValue(userInfo.UserId, out ClientSession cs);
+                    // 유저 상태 변경
+                    cs.CurrentState = UserState.Lobby;
+                    cs.Room = null;
+
+                    AddUserToLobby(userInfo.UserId); // 로비에 유저 추가
+                }
             }
             else
             {
