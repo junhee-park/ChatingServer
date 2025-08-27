@@ -520,8 +520,8 @@ namespace DummyClient
 
         public override void OnRecvPacket(ArraySegment<byte> data)
         {
-            ushort size = BitConverter.ToUInt16(data.Array, 0);
-            ushort packetId = BitConverter.ToUInt16(data.Array, 2);
+            ushort size = BitConverter.ToUInt16(data.Array, data.Offset);
+            ushort packetId = BitConverter.ToUInt16(data.Array, data.Offset + 2);
             MsgId msgId = (MsgId)packetId;
             //lock (testlogsLock)
             //{
@@ -534,7 +534,7 @@ namespace DummyClient
             PacketManager.Instance.InvokePacketHandler(this, data);
             if (msgId == MsgId.SCreateRoomBc)
             {
-                ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
+                ArraySegment<byte> d = new ArraySegment<byte>(data.Array, data.Offset + 4, size - 4);
                 var s_packet = PacketManager.Instance.MakePacket<S_CreateRoomBc>(d);
                 lock (testlogsLock)
                 {
@@ -543,7 +543,7 @@ namespace DummyClient
             }
             else if (msgId == MsgId.SEnterLobbyAnyUserBc)
             {
-                ArraySegment<byte> d = new ArraySegment<byte>(data.Array, 4, size - 4);
+                ArraySegment<byte> d = new ArraySegment<byte>(data.Array, data.Offset+ 4, size - 4);
                 var s_packet = PacketManager.Instance.MakePacket<S_EnterLobbyAnyUserBc>(d);
                 lock (testlogsLock)
                 {

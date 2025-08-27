@@ -68,10 +68,10 @@ public class PacketManager
 
     public void InvokePacketHandler(Session session, ArraySegment<byte> buffer)
     {
-        ushort size = BitConverter.ToUInt16(buffer.Array, 0);
-        ushort packetId = BitConverter.ToUInt16(buffer.Array, 2);
+        ushort size = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
+        ushort packetId = BitConverter.ToUInt16(buffer.Array, buffer.Offset + 2);
 
-        ArraySegment<byte> data = new ArraySegment<byte>(buffer.Array, 4, size - 4);
+        ArraySegment<byte> data = new ArraySegment<byte>(buffer.Array, buffer.Offset + 4, size - 4);
         bool result = _makePacket.TryGetValue(packetId, out var makePacketFunc);
         if (!result)
         {
