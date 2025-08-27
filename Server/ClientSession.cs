@@ -36,14 +36,15 @@ namespace Server
             BitConverter.TryWriteBytes(segment.Array, (ushort)(packetSize + 4));
             BitConverter.TryWriteBytes(new ArraySegment<byte>(segment.Array, 2, segment.Count - 2), (ushort)packetId);
             Array.Copy(message.ToByteArray(), 0, segment.Array, 4, packetSize);
-
+            Console.WriteLine($"{DateTime.UtcNow} {UserInfo.UserId} {packetName}");
             RegisterSend(segment.Array);
         }
 
         public override void OnRecvPacket(ArraySegment<byte> data)
         {
+            ushort size = BitConverter.ToUInt16(data.Array, 0);
             ushort packetId = BitConverter.ToUInt16(data.Array, 2);
-            Console.WriteLine($"[INFO] {DateTime.UtcNow} {(MsgId)packetId} UID: {UserInfo.UserId}");
+            Console.WriteLine($"[INFO] {DateTime.UtcNow} {(MsgId)packetId} UID: {UserInfo.UserId} size: {size} Offset: {data.Offset} Count:{data.Count} Thread: {Thread.CurrentThread.ManagedThreadId}");
             PacketManager.Instance.InvokePacketHandler(this, data);
             LastRecvDate = DateTime.UtcNow;
             IsPing = false;

@@ -25,7 +25,6 @@ namespace Server
         public HashSet<int> userIds = new HashSet<int>(); // 로비에 존재하는 유저의 id목록
 
         public object _lock = new object();
-
         public Room CreateRoom(string roomName, int roomMasterId)
         {
             Room room = new Room(Interlocked.Increment(ref nextRoomId), roomName, roomMasterId);
@@ -65,7 +64,6 @@ namespace Server
                 s_CreateRoomBC.RoomInfo = roomInfo;
 
                 BroadcastToLobby(s_CreateRoomBC);
-
             }
         }
 

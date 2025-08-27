@@ -108,22 +108,10 @@ public static class PacketHandler
         if (serverSession.RoomManager.UserInfos.TryGetValue(s_CreateRoomPacket.RoomInfo.RoomMasterUserId, out UserInfo roomMasterUser))
             serverSession.RoomManager.UserInfos.Remove(s_CreateRoomPacket.RoomInfo.RoomMasterUserId);
 
-        // 방 생성자는 방에 입장한 것으로 간주하고 방 정보와 유저 리스트를 뷰 매니저에 전달하여 UI 갱신
-        if (serverSession.UserInfo.UserId == s_CreateRoomPacket.RoomInfo.RoomMasterUserId)
-        {
-            serverSession.RoomManager.CurrentRoom = s_CreateRoomPacket.RoomInfo; // 현재 방 정보 설정
-            // 방으로 스크린을 변경하고 방 유저 리스트를 보여줌
-            serverSession.CurrentState = UserState.Room;
-            serverSession.ViewManager.ShowRoomUserList(s_CreateRoomPacket.RoomInfo.UserInfos);
-            serverSession.ViewManager.ShowText($"방 생성 성공: {s_CreateRoomPacket.RoomInfo.RoomName} (ID: {s_CreateRoomPacket.RoomInfo.RoomId})");
-        }
-        else
-        {
-            // 방 리스트에 방을 추가하고 방 리스트를 보여줌
-            serverSession.ViewManager.ShowAddedRoom(s_CreateRoomPacket.RoomInfo);
-            if (roomMasterUser != null)
-                serverSession.ViewManager.ShowRemovedUser(0, roomMasterUser);
-        }
+        serverSession.RoomManager.CurrentRoom = s_CreateRoomPacket.RoomInfo; // 현재 방 정보 설정
+        serverSession.CurrentState = UserState.Room;
+        serverSession.ViewManager.ShowRoomUserList(s_CreateRoomPacket.RoomInfo.UserInfos);
+        serverSession.ViewManager.ShowText($"방 생성 성공: {s_CreateRoomPacket.RoomInfo.RoomName} (ID: {s_CreateRoomPacket.RoomInfo.RoomId})");
     }
 
     /// <summary>
@@ -144,22 +132,10 @@ public static class PacketHandler
         if (serverSession.RoomManager.UserInfos.TryGetValue(s_CreateRoomPacket.RoomInfo.RoomMasterUserId, out UserInfo roomMasterUser))
             serverSession.RoomManager.UserInfos.Remove(s_CreateRoomPacket.RoomInfo.RoomMasterUserId);
 
-        // 방 생성자는 방에 입장한 것으로 간주하고 방 정보와 유저 리스트를 뷰 매니저에 전달하여 UI 갱신
-        if (serverSession.UserInfo.UserId == s_CreateRoomPacket.RoomInfo.RoomMasterUserId)
-        {
-            serverSession.RoomManager.CurrentRoom = s_CreateRoomPacket.RoomInfo; // 현재 방 정보 설정
-            // 방으로 스크린을 변경하고 방 유저 리스트를 보여줌
-            serverSession.CurrentState = UserState.Room;
-            serverSession.ViewManager.ShowRoomUserList(s_CreateRoomPacket.RoomInfo.UserInfos);
-            serverSession.ViewManager.ShowText($"방 생성 성공: {s_CreateRoomPacket.RoomInfo.RoomName} (ID: {s_CreateRoomPacket.RoomInfo.RoomId})");
-        }
-        else
-        {
-            // 방 리스트에 방을 추가하고 방 리스트를 보여줌
-            serverSession.ViewManager.ShowAddedRoom(s_CreateRoomPacket.RoomInfo);
-            if (roomMasterUser != null)
-                serverSession.ViewManager.ShowRemovedUser(0, roomMasterUser);
-        }
+        // 방 리스트에 방을 추가하고 방 리스트를 보여줌
+        serverSession.ViewManager.ShowAddedRoom(s_CreateRoomPacket.RoomInfo);
+        if (roomMasterUser != null)
+            serverSession.ViewManager.ShowRemovedUser(0, roomMasterUser);
     }
 
     /// <summary>
